@@ -87,11 +87,16 @@ type JsonZone struct {
 //敵出現情報,クエスト情報を返す
 func CreateEnemyAppears(gameMap JsonGameMap,
 quest JsonGameQuestIn, eqps map[string]JsonGameEqp, questEnvironment QuestEnvironment) (enemyAppears []EnemyAppear, enemySamples []EnemySample, zones []JsonZone, questsOut []JsonGameQuestOut) {
+	//敵の数を決定
+
+
+	//組み合わせを決定
+
 
 	//敵の強さを決定
 
 
-	//敵の数を決定
+	//ペースに従って配置
 
 
 	return enemyAppears, enemySamples, zones, questsOut

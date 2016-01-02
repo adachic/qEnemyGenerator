@@ -41,13 +41,17 @@ func main() {
 
 	//種類・強さ・数・タイミング・位置
 	//	enemyAppears, enemySamples, zones, quests := CreateEnemyAppears(gameMap, quests, eqps, questId, questEnvironment)
-	_, _, _, _ = CreateEnemyAppears(gameMap, currentQuest, eqps, questEnvironment)
+	enemyAppears, enemySamples, zones, questsOut := CreateEnemyAppears(gameMap, currentQuest, eqps, questEnvironment)
 
 	//敵サンプル出力 enemy_sample.json/csv
 	//クエストへのひも付け quest_enemy.json/csv
 	//出現位置 enemy_appear_point.json/csv
-	//	CreateJsonAndCsv(enemyAppears, enemySamples, zones, quests);
+	CreateJsonAndCsv(enemyAppears, enemySamples, zones, questsOut)
 
 	fmt.Printf("Hello, world4.\n")
 }
 
+//CSV出力
+func CreateJsonAndCsv(enemyAppears []EnemyAppear, enemySmaples []EnemySample, zones []JsonZone, quests []JsonGameQuestOut) {
+
+}
