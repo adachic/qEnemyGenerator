@@ -1,1 +1,49 @@
-package qEnemyGenerator
+package main
+
+import (
+	"flag"
+	"fmt"
+)
+
+
+func main() {
+	fmt.Printf("Hello, world3.\n")
+
+	//マップ読み込み
+	//クエスト一覧読み込み
+	//EQP一覧読み込み
+	var mapFilePath string
+	var questFilePath string
+	var eqpFilePath string
+	var questId int
+	flag.StringVar(&mapFilePath, "map", "map.json", "APP_PARTS_FILE_PATH")
+	flag.StringVar(&questFilePath, "quest", "quest.json", "APP_PARTS_FILE_PATH")
+	flag.StringVar(&eqpFilePath, "eqp", "eqp.json", "APP_PARTS_FILE_PATH")
+	flag.IntVar(&questId, "questId", "quest id", "APP_PARTS_FILE_PATH")
+	flag.Parse()
+
+	//pre;
+	//敵出現位置取得
+	//questId取得
+	gameMap := CreateGameMap(mapFilePath)
+	quests := CreateGameQuests(questFilePath)
+	eqps := CreateGameEqps(eqpFilePath)
+
+	currentQuest :=  quests[questId]
+	//出現難度配分
+	//出現タイミング
+	//組み合わせ比率
+	questEnvironment := CreateQuestEnvironment(currentQuest)
+
+	//種類・強さ・数・タイミング・位置
+//	enemyAppears, enemySamples, zones, quests := CreateEnemyAppears(gameMap, quests, eqps, questId, questEnvironment)
+	_, _, _, quests := CreateEnemyAppears(gameMap, quests, eqps, questId, questEnvironment)
+
+	//敵サンプル出力 enemy_sample.json/csv
+	//クエストへのひも付け quest_enemy.json/csv
+	//出現位置 enemy_appear_point.json/csv
+//	CreateJsonAndCsv(enemyAppears, enemySamples, zones, quests);
+
+	fmt.Printf("Hello, world4.\n")
+}
+
