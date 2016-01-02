@@ -22,6 +22,7 @@ type JsonGameMap struct {
 	AspectY   int `json:"aspectY"`
 	AspectT   int `json:"aspectT"`
 	JungleGym []JsonPanel `json:"jungleGym"`
+	GameParts []GameParts `json:"gameParts"`
 }
 
 /*
@@ -29,6 +30,7 @@ type JsonGameMap struct {
 	EnemyStartPoints []GameMapPosition
 	Category         Category
 */
+
 
 // Jsonからパースする
 func CreateGameMap(filePath string) JsonGameMap{

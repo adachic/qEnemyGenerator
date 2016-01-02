@@ -23,15 +23,16 @@ func main() {
 	flag.IntVar(&questId, "questId", 0, "APP_PARTS_FILE_PATH")
 	flag.Parse()
 
-	//pre;
 	//敵出現位置取得
 	//questId取得
 	fmt.Println("==map=")
 	gameMap := CreateGameMap(mapFilePath)
+	gamePartsDict := CreateGamePartsDict("./assets/IntegratedPartsAll2.json") //harfId対応済み
 	fmt.Println("==quest=")
 	quests := CreateGameQuests(questFilePath)
 	fmt.Println("==eqp=")
 	eqps := CreateGameEqps(eqpFilePath)
+
 
 	currentQuest := quests[strconv.Itoa(questId)]
 	//出現難度配分
@@ -41,7 +42,7 @@ func main() {
 
 	//種類・強さ・数・タイミング・位置
 	//	enemyAppears, enemySamples, zones, quests := CreateEnemyAppears(gameMap, quests, eqps, questId, questEnvironment)
-	enemyAppears, enemySamples, zones, questsOut := CreateEnemyAppears(gameMap, currentQuest, eqps, questEnvironment)
+	enemyAppears, enemySamples, zones, questsOut := CreateEnemyAppears(gamePartsDict, gameMap, currentQuest, eqps, questEnvironment)
 
 	//敵サンプル出力 enemy_sample.json/csv
 	//クエストへのひも付け quest_enemy.json/csv
