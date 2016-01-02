@@ -35,12 +35,15 @@ func CreateGameMap(filePath string) JsonGameMap{
 	// Loading jsonfile
 	file, err := ioutil.ReadFile(filePath)
 	// 指定したDataset構造体が中身になるSliceで宣言する
+	if err != nil {
+		fmt.Println("Read Error: ", err)
+	}
 
 	var jsonGameMap JsonGameMap
 
 	json_err := json.Unmarshal(file, &jsonGameMap)
-	if err != nil {
-		fmt.Println("Format Error: ", json_err)
+	if json_err != nil {
+		fmt.Println("Format Error1: ", json_err)
 	}
 
 	fmt.Printf("%+v\n", jsonGameMap)

@@ -1,13 +1,53 @@
 package main
 
-type AIType int
+type AIType string
 const (
 	EQPTypeAttacker AIType = "attacker"
+	EQPTypeDefender AIType = "defender"
+	EQPTypeHealer AIType = "healer"
 )
 
 type CharacterId int
 const (
-	CharacterIdSlime CharacterId = iota
+	CharacterIdSword CharacterId = iota
+	CharacterIdArcher
+	CharacterIdMage
+	CharacterIdHealer
+	CharacterIdThief
+	CharacterIdWarlock
+	CharacterIdNinja
+	CharacterIdSlimeB
+	CharacterIdSlimeR
+	CharacterIdSlimeY
+	CharacterIdSlimeG
+	CharacterIdSlimeD
+	CharacterIdSkeleton
+	CharacterIdPenguin
+	CharacterIdGoblin
+	CharacterIdGoblinC
+	CharacterIdLizard
+	CharacterIdLizardP
+	CharacterIdLizardC
+	CharacterIdFrog
+	CharacterIdFrogP
+	CharacterIdBat
+	CharacterIdBatI
+	CharacterIdBatP
+	CharacterIdGhost
+	CharacterIdGhostI
+	CharacterIdSpore
+	CharacterIdSporeP
+	CharacterIdSporeC
+	CharacterIdNecR
+	CharacterIdNecP
+	CharacterIdNecD
+	CharacterIdWitch
+	CharacterIdWitchV
+	CharacterIdWitchS
+	CharacterIdGigantI
+	CharacterIdGigantP
+	CharacterIdGigantC
+	CharacterIdSkeletonW
 )
 
 type EnemyAppear struct {
@@ -46,7 +86,7 @@ type JsonZone struct {
 
 //敵出現情報,クエスト情報を返す
 func CreateEnemyAppears(gameMap JsonGameMap,
-quests JsonGameQuestIn, eqps JsonGameEqp, questId int, questEnvironment QuestEnvironment) (enemyAppears []EnemyAppear, enemySamples []EnemySample, zones []JsonZone, quests []JsonGameQuestOut) {
+quest JsonGameQuestIn, eqps map[string]JsonGameEqp, questEnvironment QuestEnvironment) (enemyAppears []EnemyAppear, enemySamples []EnemySample, zones []JsonZone, questsOut []JsonGameQuestOut) {
 
 	//敵の強さを決定
 
@@ -54,9 +94,5 @@ quests JsonGameQuestIn, eqps JsonGameEqp, questId int, questEnvironment QuestEnv
 	//敵の数を決定
 
 
-
-
-
-
-	return enemyAppears, enemySamples, zones, quests
+	return enemyAppears, enemySamples, zones, questsOut
 }

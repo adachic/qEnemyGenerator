@@ -6,12 +6,12 @@ import (
 	"fmt"
 )
 
-type EQPType int
+type EQPType string
 const (
 	EQPTypeWeapon EQPType = "weapon"
 )
 
-type EQPSubType int
+type EQPSubType string
 const (
 	EQPSubTypeMelee EQPSubType = "melee"
 )
@@ -23,15 +23,16 @@ type JsonGameEqp struct {
 }
 
 // Jsonからパースする
-func CreateGameEqps(filePath string) []JsonGameEqp {
-	// Loading jsonfile
+func CreateGameEqps(filePath string) map[string]JsonGameEqp {
 	file, err := ioutil.ReadFile(filePath)
-	// 指定したDataset構造体が中身になるSliceで宣言する
+	if err != nil {
+		fmt.Println("Read Error: ", err)
+	}
 
-	var jsonGameEqps []JsonGameEqp
+	var jsonGameEqps map[string]JsonGameEqp
 
 	json_err := json.Unmarshal(file, &jsonGameEqps)
-	if err != nil {
+	if json_err != nil {
 		fmt.Println("Format Error: ", json_err)
 	}
 

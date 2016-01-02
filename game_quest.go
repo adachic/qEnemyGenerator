@@ -6,18 +6,6 @@ import (
 	"fmt"
 )
 
-//クエスト
-type JsonGameQuestIn struct {
-	Id        int
-	Type      string
-	Rule      string
-	SpendAP   int
-	DropRank  int
-
-	Difficult int
-	MapId     int
-}
-
 type JsonGameQuestOut struct {
 	Id          int
 	Difficult   int
@@ -47,22 +35,28 @@ type JsonGameQuestOut struct {
 	Description string
 }
 
-/*
-	AllyStartPoint   GameMapPosition
-	EnemyStartPoints []GameMapPosition
-	Category         Category
-*/
+//クエスト
+type JsonGameQuestIn struct {
+	Id        int `json:"questId"`
+	SpendAP   int `json:"spendAP"`
+	DropRank  int `json:"dropRank"`
+
+	Difficult int `json:"difficult"`
+	MapId     int `json:"mapId"`
+}
 
 // Jsonからパースする
-func CreateGameQuests(filePath string) []JsonGameQuestIn {
-	// Loading jsonfile
-	file, err := ioutil.ReadFile(filePath)
-	// 指定したDataset構造体が中身になるSliceで宣言する
+func CreateGameQuests(filePath string) map[string]JsonGameQuestIn {
 
-	var jsonGameQuests []JsonGameQuestIn
+	var jsonGameQuests map[string]JsonGameQuestIn
+
+	file, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		fmt.Println("Read Error: ", err)
+	}
 
 	json_err := json.Unmarshal(file, &jsonGameQuests)
-	if err != nil {
+	if json_err != nil {
 		fmt.Println("Format Error: ", json_err)
 	}
 
@@ -76,11 +70,11 @@ func CreateGameQuests(filePath string) []JsonGameQuestIn {
 //出現タイミング
 //組み合わせ比率
 type QuestEnvironment struct {
-	DifficurtQuest int
-	MonsPerHum float32
+	DifficurtQuest       int
+	MonsPerHum           float32
 	IncreaseAppearPerSec float32
-	InpulseVolume float32
-	InpulsePerQuest float32
+	InpulseVolume        float32
+	InpulsePerQuest      float32
 }
 
 func CreateQuestEnvironment(jsonGameQuestIn JsonGameQuestIn) QuestEnvironment {
