@@ -13,6 +13,13 @@ type JsonPanel struct {
 	Id string `json:"id"`
 }
 
+//座標
+type GameMapPosition struct {
+	X int `json:"x"`
+	Y int `json:"y"`
+	Z int `json:"z"`
+}
+
 //マップ
 type JsonGameMap struct {
 	MaxX      int `json:"maxX"`
@@ -23,6 +30,12 @@ type JsonGameMap struct {
 	AspectT   int `json:"aspectT"`
 	JungleGym []JsonPanel `json:"jungleGym"`
 	GameParts []GameParts `json:"gameParts"`
+
+	AllyStartPoint   GameMapPosition `json:"allyStartPoint"`
+	EnemyStartPoints []GameMapPosition `json:"enemyStartPoints"`
+	Category         Category `json:"category"`
+
+	JungleGym3 [][][] GameParts
 }
 
 /*
@@ -30,7 +43,6 @@ type JsonGameMap struct {
 	EnemyStartPoints []GameMapPosition
 	Category         Category
 */
-
 
 // Jsonからパースする
 func CreateGameMap(filePath string) JsonGameMap{
@@ -51,4 +63,27 @@ func CreateGameMap(filePath string) JsonGameMap{
 	fmt.Printf("%+v\n", jsonGameMap)
 
 	return jsonGameMap
+}
+
+//１次元配列を３次元配列に転換
+func (game_map *JsonGameMap) allocJungle3(gamePartsDict map[string]GameParts){
+	game_map.JungleGym3 = make([][][]GameParts, game_map.MaxZ)
+	for z := 0; z < game_map.MaxZ; z++ {
+		game_map.JungleGym3[z] = make([][]GameParts, game_map.MaxY)
+		for y := 0; y < game_map.MaxY; y++ {
+			game_map.JungleGym3[z][y] = make([]GameParts, game_map.MaxX)
+		}
+	}
+	/*
+	for z := 0; z < game_map.MaxZ; z++ {
+		for y := 0; y < game_map.MaxY; y++ {
+			for x := 0; x < game_map.MaxX; x++ {
+				game_map.JungleGym[z][y][x] = false;
+			}
+		}
+	}
+	*/
+	for _, value := range game_map.JungleGym{
+		game_map.JungleGym3[value.Z][value.Y][value.X] = gamePartsDict[value.Id]
+	}
 }
