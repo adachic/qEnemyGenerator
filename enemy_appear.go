@@ -1,4 +1,5 @@
 package main
+import "fmt"
 
 type AIType string
 const (
@@ -98,6 +99,9 @@ enemySamples []EnemySample, zones []JsonZone, questsOut []JsonGameQuestOut) {
 	//地点・ゾーンの確保
 	zones = CreateZones(questEnvironment, gameMap, gamePartsDict)
 
+	fmt.Println("===zones====")
+	fmt.Printf("%+v\n", zones)
+
 	//敵の数を決定
 
 
@@ -130,16 +134,20 @@ func CreateZones(questEnvironment QuestEnvironment, gameMap JsonGameMap, gamePar
 		}
 	}
 
+	fmt.Println("aho1")
 	//敵地点をゾーンに変換
 	var gameZones []GameZone
 	for _, value := range gameMap.EnemyStartPoints {
 		positions := CreateNearlyGamePositions(value, gameMap, xy)
 		gameZone := NewGameZone(positions)
 		gameZones = append(gameZones, *gameZone)
+//		fmt.Printf("%+v\n", gameZones)
 	}
+	fmt.Println("aho2")
 
 	//JSON形式に変換
 	jsonZones = ConvertToJsonZone(gameZones, gameMap.MapId)
+	fmt.Println("aho3")
 	return jsonZones
 }
 
@@ -188,11 +196,15 @@ func CreateNearlyGamePositions(position GameMapPosition, gameMap JsonGameMap, xy
 		x := position.X + xOffs[i]
 		y := position.Y + yOffs[i]
 		z := position.Z
+		if(x >= gameMap.MaxX || x < 0 || y >= gameMap.MaxY || y < 0 || z == 0){
+			continue
+		}
 		//他のゾーンで取られている
 		existXY := xy[y][x]
 		if (existXY) {
 			continue
 		}
+//		fmt.Print("unko0:",z)
 		cube := gameMap.JungleGym3[z - 1][y][x]
 		//足元がない
 		if (cube == nil) {
@@ -202,6 +214,7 @@ func CreateNearlyGamePositions(position GameMapPosition, gameMap JsonGameMap, xy
 		if (!cube.Walkable) {
 			continue
 		}
+//		fmt.Print("unko1:",z)
 		cube2 := gameMap.JungleGym3[z][y][x]
 		//ブロックで埋まっている
 		if (cube2 != nil) {
