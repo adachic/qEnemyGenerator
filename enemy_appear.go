@@ -113,8 +113,8 @@ enemySamples []EnemySample, zones []JsonZone, questsOut []JsonGameQuestOut) {
 	return enemyAppears, enemySamples, zones, questsOut
 }
 
-func CreateZones(questEnvironment QuestEnvironment, gameMap JsonGameMap, gamePartsDict map[string]GameParts) {
-	var zones []GameZone
+//出現ゾーン生成
+func CreateZones(questEnvironment QuestEnvironment, gameMap JsonGameMap, gamePartsDict map[string]GameParts) (jsonZones []JsonZone) {
 	//出現地点をゾーンに変換
 	//	gameMap.AllyStartPoint
 
@@ -131,60 +131,88 @@ func CreateZones(questEnvironment QuestEnvironment, gameMap JsonGameMap, gamePar
 	}
 
 	//敵地点をゾーンに変換
+	var gameZones []GameZone
 	for _, value := range gameMap.EnemyStartPoints {
 		positions := CreateNearlyGamePositions(value, gameMap, xy)
-		zone := NewGameZone(positions)
-		zones = append(zones, zone)
+		gameZone := NewGameZone(positions)
+		gameZones = append(gameZones, *gameZone)
 	}
 
-	//難度に応じてゾーン増やす
-	CreateZonesForEdge(zones, gameMap, questEnvironment)
-
-	return zones
+	//JSON形式に変換
+	jsonZones = ConvertToJsonZone(gameZones, gameMap.MapId)
+	return jsonZones
 }
 
-//難度に応じてゾーン増やす
-func CreateZonesForEdge(zones []GameZone, gameMap JsonGameMap, questEnvironment QuestEnvironment){
-	//必要なゾーン数
-	alreadyNum := len(zones)
-
-
-
-
-
+//GameZoneをJsonZoneに変換
+func ConvertToJsonZone(gameZones []GameZone, mapId int) (jsonZones []JsonZone) {
+	id := 1
+	for _, positions := range gameZones {
+		var jsonZone JsonZone
+		try := 1
+		for _, position := range positions.GameMapPositions {
+			jsonZone.Id = id
+			jsonZone.MapId = mapId
+			id++
+			pos := position.Z * 10000 + position.Y * 100 + position.X
+			switch try {
+			case 1:
+				jsonZone.pos1 = pos
+			case 2:
+				jsonZone.pos2 = pos
+			case 3:
+				jsonZone.pos3 = pos
+			case 4:
+				jsonZone.pos4 = pos
+			case 5:
+				jsonZone.pos5 = pos
+			case 6:
+				jsonZone.pos6 = pos
+			}
+			try++
+			jsonZones = append(jsonZones, jsonZone)
+		}
+	}
+	return jsonZones
 }
+
 
 //positionの周辺のマスから歩行可能、高低差１以内の場所を配列として返す(ゾーンの内容)
 func CreateNearlyGamePositions(position GameMapPosition, gameMap JsonGameMap, xy [][]bool) (gameMapPositions []GameMapPosition) {
-	createNum := 5
+	createMaxNum := 5
+	createdNum := 0
+
 	xOffs := [...]int{-1, 0, 1, 0, -1, 1, -1, 1}
 	yOffs := [...]int{0, -1, 0, 1, -1, 1, 1, -1}
 
-	for i := 0; i <= createNum; i++ {
+	for i := 0; i < 8; i++ {
 		x := position.X + xOffs[i]
 		y := position.Y + yOffs[i]
 		z := position.Z
-		cube, exist := gameMap.JungleGym3[z - 1][y][x]
 		//他のゾーンで取られている
-		_, existXY := xy[y][x]
+		existXY := xy[y][x]
 		if (existXY) {
 			continue
 		}
+		cube := gameMap.JungleGym3[z - 1][y][x]
 		//足元がない
-		if (!exist) {
+		if (cube == nil) {
 			continue
 		}
 		//歩行不能
 		if (!cube.Walkable) {
 			continue
 		}
-		_, exist = gameMap.JungleGym3[z][y][x]
+		cube2 := gameMap.JungleGym3[z][y][x]
 		//ブロックで埋まっている
-		if (exist) {
+		if (cube2 != nil) {
 			continue
 		}
 		xy[y][x] = true
 		gameMapPositions = append(gameMapPositions, GameMapPosition{X:x, Y:y, Z:z})
+		createdNum++
+		if createdNum >= createMaxNum {
+			break
+		}
 	}
 
 	return gameMapPositions

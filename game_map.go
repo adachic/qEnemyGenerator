@@ -35,7 +35,8 @@ type JsonGameMap struct {
 	EnemyStartPoints []GameMapPosition `json:"enemyStartPoints"`
 	Category         Category `json:"category"`
 
-	JungleGym3 [][][] GameParts
+	JungleGym3 [][][] *GameParts
+	MapId int
 }
 
 /*
@@ -67,11 +68,11 @@ func CreateGameMap(filePath string) JsonGameMap{
 
 //１次元配列を３次元配列に転換
 func (game_map *JsonGameMap) allocJungle3(gamePartsDict map[string]GameParts){
-	game_map.JungleGym3 = make([][][]GameParts, game_map.MaxZ)
+	game_map.JungleGym3 = make([][][]*GameParts, game_map.MaxZ)
 	for z := 0; z < game_map.MaxZ; z++ {
-		game_map.JungleGym3[z] = make([][]GameParts, game_map.MaxY)
+		game_map.JungleGym3[z] = make([][]*GameParts, game_map.MaxY)
 		for y := 0; y < game_map.MaxY; y++ {
-			game_map.JungleGym3[z][y] = make([]GameParts, game_map.MaxX)
+			game_map.JungleGym3[z][y] = make([]*GameParts, game_map.MaxX)
 		}
 	}
 	/*
@@ -84,6 +85,15 @@ func (game_map *JsonGameMap) allocJungle3(gamePartsDict map[string]GameParts){
 	}
 	*/
 	for _, value := range game_map.JungleGym{
-		game_map.JungleGym3[value.Z][value.Y][value.X] = gamePartsDict[value.Id]
+		parts := gamePartsDict[value.Id]
+		game_map.JungleGym3[value.Z][value.Y][value.X] = &GameParts{
+			Id:parts.Id,
+			Walkable:parts.Walkable,
+			MacroTypes:parts.MacroTypes,
+			WaterType:parts.WaterType,
+			Category:parts.Category,
+			StructureType:parts.StructureType,
+			PavementType:parts.PavementType,
+		}
 	}
 }
