@@ -102,20 +102,27 @@ enemySamples []EnemySample, zones []JsonZone, questsOut []JsonGameQuestOut) {
 	fmt.Println("===zones====")
 	fmt.Printf("%+v\n", zones)
 
-	//敵の数を決定
+	//求めたい評価値
+	creteriaEvaluation := questEnvironment.criteriaStateEvaluation()
+	fmt.Printf("creteriaEvaluation %+v\n", creteriaEvaluation)
+
+	//スライス単位でナップザックする
+	for i := 0; i < questEnvironment.timeSliceCount() ; i++ {
+		//このスライスの理想評価値
+		creteriaEvaluationPerSlice := questEnvironment.criteriaEvaluationPerSliceAtIndex(i)
+		fmt.Printf("[%d]%+v\n",i, creteriaEvaluationPerSlice)
+
+//		enemyAppears := EnemiesWithZone(creteriaEvaluationPerSlice, zones)
+	}
+
+	//ナップザック結果の結合
 
 
-	//組み合わせを決定
-
-
-	//敵の強さを決定
-
-
-	//ペースに従って配置
 
 
 	return enemyAppears, enemySamples, zones, questsOut
 }
+
 
 //出現ゾーン生成
 func CreateZones(questEnvironment QuestEnvironment, gameMap JsonGameMap, gamePartsDict map[string]GameParts) (jsonZones []JsonZone) {
@@ -134,7 +141,7 @@ func CreateZones(questEnvironment QuestEnvironment, gameMap JsonGameMap, gamePar
 		}
 	}
 
-	fmt.Println("aho1")
+//	fmt.Println("aho1")
 	//敵地点をゾーンに変換
 	var gameZones []GameZone
 	for _, value := range gameMap.EnemyStartPoints {
@@ -143,11 +150,11 @@ func CreateZones(questEnvironment QuestEnvironment, gameMap JsonGameMap, gamePar
 		gameZones = append(gameZones, *gameZone)
 //		fmt.Printf("%+v\n", gameZones)
 	}
-	fmt.Println("aho2")
+//	fmt.Println("aho2")
 
 	//JSON形式に変換
 	jsonZones = ConvertToJsonZone(gameZones, gameMap.MapId)
-	fmt.Println("aho3")
+//	fmt.Println("aho3")
 	return jsonZones
 }
 
@@ -182,7 +189,6 @@ func ConvertToJsonZone(gameZones []GameZone, mapId int) (jsonZones []JsonZone) {
 	}
 	return jsonZones
 }
-
 
 //positionの周辺のマスから歩行可能、高低差１以内の場所を配列として返す(ゾーンの内容)
 func CreateNearlyGamePositions(position GameMapPosition, gameMap JsonGameMap, xy [][]bool) (gameMapPositions []GameMapPosition) {

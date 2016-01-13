@@ -70,19 +70,56 @@ func CreateGameQuests(filePath string) map[string]JsonGameQuestIn {
 //出現タイミング
 //組み合わせ比率
 type QuestEnvironment struct {
-	DifficurtQuest       int
-	MonsPerHum           float32
-	IncreaseAppearPerSec float32
-	InpulseVolume        float32
-	InpulsePerQuest      float32
+	DifficurtQuest        int
+
+	PointPerOne           int //1体あたりの目安評価値
+	SecondsPerQuest       int //クエスト秒数
+	SecondsPerSlice       int //スライスあたり秒数
+	BasePointPerSlice     int //スライスあたりの目安評価値のベース体数
+	IncreasePointPerSlice int //スライスあたりの増加評価値のベース体数
+}
+
+//スライスの数
+func (questEnvironment QuestEnvironment)timeSliceCount() int {
+	return int(questEnvironment.SecondsPerQuest / questEnvironment.SecondsPerSlice);
+}
+
+//ステージの期待値を返す
+func (questEnvironment QuestEnvironment)criteriaStateEvaluation() int {
+	criteriaStateEvaluation := questEnvironment.timeSliceCount() *
+		questEnvironment.BasePointPerSlice *
+		questEnvironment.PointPerOne
+
+	for i := 0; i < questEnvironment.timeSliceCount(); i++ {
+		criteriaStateEvaluation +=
+			questEnvironment.IncreasePointPerSlice *
+			questEnvironment.PointPerOne *
+			i
+	}
+
+	return criteriaStateEvaluation
+}
+
+//任意のスライスの期待値を返す
+//@param sliceIndex 何番目のスライスか(0が最初)
+func (questEnvironment QuestEnvironment)criteriaEvaluationPerSliceAtIndex(sliceIndex int) int {
+	return questEnvironment.BasePointPerSlice * questEnvironment.PointPerOne +
+	questEnvironment.IncreasePointPerSlice * questEnvironment.PointPerOne * sliceIndex
 }
 
 func CreateQuestEnvironment(jsonGameQuestIn JsonGameQuestIn) QuestEnvironment {
 	return QuestEnvironment{
-		DifficurtQuest: jsonGameQuestIn.Difficult,
-		MonsPerHum: 5.0,
-		IncreaseAppearPerSec: 0.2,
-		InpulseVolume: 5.0,
-		InpulsePerQuest: 3,
+		DifficurtQuest 		   : jsonGameQuestIn.Difficult,
+		PointPerOne            : 70,
+		SecondsPerQuest        : 60,
+		SecondsPerSlice        : 5,
+		BasePointPerSlice      : 5,
+		IncreasePointPerSlice  : 1,
 	}
+}
+
+
+//敵の総量を決定する
+func CreateEnemyNum(questEnvironment QuestEnvironment) int {
+	return questEnvironment.DifficurtQuest * 10;
 }
