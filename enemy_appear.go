@@ -8,49 +8,6 @@ const (
 	EQPTypeHealer AIType = "healer"
 )
 
-type CharacterId int
-const (
-	CharacterIdSword CharacterId = iota
-	CharacterIdArcher
-	CharacterIdMage
-	CharacterIdHealer
-	CharacterIdThief
-	CharacterIdWarlock
-	CharacterIdNinja
-	CharacterIdSlimeB
-	CharacterIdSlimeR
-	CharacterIdSlimeY
-	CharacterIdSlimeG
-	CharacterIdSlimeD
-	CharacterIdSkeleton
-	CharacterIdPenguin
-	CharacterIdGoblin
-	CharacterIdGoblinC
-	CharacterIdLizard
-	CharacterIdLizardP
-	CharacterIdLizardC
-	CharacterIdFrog
-	CharacterIdFrogP
-	CharacterIdBat
-	CharacterIdBatI
-	CharacterIdBatP
-	CharacterIdGhost
-	CharacterIdGhostI
-	CharacterIdSpore
-	CharacterIdSporeP
-	CharacterIdSporeC
-	CharacterIdNecR
-	CharacterIdNecP
-	CharacterIdNecD
-	CharacterIdWitch
-	CharacterIdWitchV
-	CharacterIdWitchS
-	CharacterIdGigantI
-	CharacterIdGigantP
-	CharacterIdGigantC
-	CharacterIdSkeletonW
-)
-
 type EnemyAppear struct {
 	Id           int
 	Quest        JsonGameQuestIn
@@ -85,6 +42,11 @@ type JsonZone struct {
 	pos6  int `json:"pos6"`
 }
 
+func (zone JsonZone) getFit() int{
+	//TODO 正しくzoneの評価をする
+	return 10
+}
+
 type GameZone struct {
 	GameMapPositions []GameMapPosition
 }
@@ -112,7 +74,7 @@ enemySamples []EnemySample, zones []JsonZone, questsOut []JsonGameQuestOut) {
 		creteriaEvaluationPerSlice := questEnvironment.criteriaEvaluationPerSliceAtIndex(i)
 		fmt.Printf("[%d]%+v\n",i, creteriaEvaluationPerSlice)
 
-//		enemyAppears := EnemiesWithZone(creteriaEvaluationPerSlice, zones)
+		_ = EnemiesWithZone(creteriaEvaluationPerSlice, zones, questEnvironment)
 	}
 
 	//ナップザック結果の結合
@@ -233,10 +195,8 @@ func CreateNearlyGamePositions(position GameMapPosition, gameMap JsonGameMap, xy
 			break
 		}
 	}
-
 	return gameMapPositions
 }
-
 
 //ゾーン生成
 func NewGameZone(gameMapPositions []GameMapPosition) *GameZone {
@@ -245,4 +205,3 @@ func NewGameZone(gameMapPositions []GameMapPosition) *GameZone {
 	}
 	return game_zone
 }
-
