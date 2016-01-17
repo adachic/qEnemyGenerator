@@ -2,6 +2,7 @@ package main
 import (
 	"github.com/adachic/lottery"
 	"fmt"
+	"gopkg.in/go-pp/pp.v2"
 )
 
 //遺伝的アルゴリズムのパラメータ
@@ -40,6 +41,12 @@ type GeneUnitEnemy struct {
 	zone    JsonZone
 	ptId    int //ptの全体でのユニークid
 	ptCount int //ptに何人いるか
+}
+
+//Fitを返す
+func (geneUnit *GeneUnit)getFit() int{
+	geneUnit.calcFit()
+	return geneUnit.Fit
 }
 
 //Fitを返す
@@ -198,7 +205,7 @@ func (geneunit *GeneUnit)MutateSuddenly(geneEnvironment GeneEnvironment) {
 func GetMaxFitGene(geneUnits []*GeneUnit) *GeneUnit {
 	geneMaxFitUnit := &GeneUnit{Fit:0}
 	for _, unit := range geneUnits {
-		if geneMaxFitUnit.Fit < unit.Fit {
+		if geneMaxFitUnit.Fit < unit.getFit(){
 			geneMaxFitUnit = unit
 		}
 	}
@@ -299,6 +306,8 @@ func EnemiesWithZone(creteriaEvaluationPerSlice int, zones []JsonZone, questEnvi
 						fmt.Printf("[TRADE]trade completed!!!:\n")
 						nextGeneUnits[i] = src1.copy()
 						nextGeneUnits[i + 1] = src2.copy()
+//						fmt.Printf("s1:%+v s2:%+v\n", *src1, *src2)
+//						fmt.Printf("1:%+v 2:%+v\n", *nextGeneUnits[i], *nextGeneUnits[i+1])
 						geneUnitsPerAge[idx1] = nil
 						geneUnitsPerAge[idx2] = nil
 						i++
@@ -306,15 +315,15 @@ func EnemiesWithZone(creteriaEvaluationPerSlice int, zones []JsonZone, questEnvi
 				}
 				}
 			}
-			fmt.Printf("[%+v]\n->\n[%+v]\n", geneUnitsPerAge, nextGeneUnits)
+//			fmt.Printf("[%+v]\n->\n[%+v]\n", geneUnitsPerAge, nextGeneUnits)
 		}
 		//次世代が一定になっていれば次世代を対象として世代操作開始に戻る
 		geneUnitsPerAge = nextGeneUnits
 		nextGeneUnits = make([]*GeneUnit, geneEnvironment.NumPerAge)
-		fmt.Printf("[next to age:%+v -> %+v\n", geneUnitsPerAge, nextGeneUnits)
+//		fmt.Printf("[next to age:%+v -> %+v\n", geneUnitsPerAge, nextGeneUnits)
 
 		maxFitGeneUnit := GetMaxFitGene(geneUnitsPerAge)
-		fmt.Printf("maxFitGene:%+v\n", *maxFitGeneUnit)
+//		fmt.Printf("maxFitGene:%+v\n", *maxFitGeneUnit)
 		fmt.Printf("[fit age:%d]%d\n", age, maxFitGeneUnit.Fit)
 
 		Scan()
@@ -323,6 +332,12 @@ func EnemiesWithZone(creteriaEvaluationPerSlice int, zones []JsonZone, questEnvi
 	//最終世代で最もFitが高いものを選び、EnemyAppearに変換する
 	maxFitGeneUnit := GetMaxFitGene(geneUnitsPerAge)
 	fmt.Printf("[fit final]%d\n", maxFitGeneUnit.Fit)
+	fmt.Printf("[fit final geneParam]%+v\n", *maxFitGeneUnit)
+	for _ , enemy := range maxFitGeneUnit.GenericUnitEnemies{
+		fmt.Printf("[fit final enemy]%+v\n", enemy)
+		//pp.Printf("[fit final enemy]%+v\n", enemy)
+	}
+
 
 	return nil
 }
