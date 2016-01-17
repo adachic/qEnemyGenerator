@@ -79,9 +79,6 @@ enemySamples []EnemySample, zones []JsonZone, questsOut []JsonGameQuestOut) {
 
 	//ナップザック結果の結合
 
-
-
-
 	return enemyAppears, enemySamples, zones, questsOut
 }
 

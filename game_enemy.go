@@ -66,6 +66,12 @@ func CreateEnemySamples() []Enemy {
 	enemies := []Enemy{}
 	//TODO json対応
 	enemies = append(enemies, Enemy{characterId:CharacterIdSword, role:RoleTank})
+	enemies = append(enemies, Enemy{characterId:CharacterIdSword, role:RoleDpsMelee})
+	enemies = append(enemies, Enemy{characterId:CharacterIdSword, role:RoleDpsRanged})
+	enemies = append(enemies, Enemy{characterId:CharacterIdSword, role:RoleDpsAoe})
+	enemies = append(enemies, Enemy{characterId:CharacterIdSword, role:RoleHealer})
+	enemies = append(enemies, Enemy{characterId:CharacterIdSword, role:RoleBuff})
+	enemies = append(enemies, Enemy{characterId:CharacterIdSword, role:RoleDeBuff})
 	return enemies
 }
 
@@ -77,6 +83,7 @@ func PickUpRandomSampleWithRole(enemiesSample []Enemy, role Role) Enemy{
 		if enemy.role != role {
 			continue
 		}
+		//TODO ここきてない
 		filterdEnemy = append(filterdEnemy, enemy)
 	}
 

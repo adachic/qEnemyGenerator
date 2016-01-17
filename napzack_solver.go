@@ -1,11 +1,14 @@
 package main
 import (
 	"github.com/adachic/lottery"
+	"fmt"
 )
 
 //遺伝的アルゴリズムのパラメータ
 type GeneEnvironment struct {
 	NumPerAge        int //世代あたりの個体数N
+	Ages             int //世代数
+	Insections       int //交差点数
 	Zones            []JsonZone
 	QuestEnvironment QuestEnvironment
 	EnemySamples     []Enemy
@@ -13,20 +16,30 @@ type GeneEnvironment struct {
 
 //個体とその遺伝子
 type GeneUnit struct {
-	GenericEnemyNum      int             //敵の数
-	GenericEnemyLPT_Num  int             //ライトパーティの数
-	GenericEnemyFPT_Num  int             //フルパーティーの数
-	GenericEnemyIndv_Num int             //単体の数
-	GenericUnitEnemies   []GeneUnitEnemy //スライスあたりの敵一覧
+	GenericEnemyNum      int              //敵の数
+	GenericEnemyLPT_Num  int              //ライトパーティの数
+	GenericEnemyFPT_Num  int              //フルパーティーの数
+	GenericEnemyIndv_Num int              //単体の数
+	GenericUnitEnemies   []*GeneUnitEnemy //スライスあたりの敵一覧
 
-	Fit                  int             //適応度
+	Fit                  int              //適応度
+}
+
+func (geneUnit *GeneUnit)copy() *GeneUnit {
+	clonedSlice := make([]*GeneUnitEnemy, len(geneUnit.GenericUnitEnemies))
+	copy(clonedSlice, geneUnit.GenericUnitEnemies)
+	return &GeneUnit{
+		GenericUnitEnemies: clonedSlice,
+	}
 }
 
 //敵個体
 type GeneUnitEnemy struct {
-	enemy Enemy
-	eqp   JsonGameEqp
-	zone  JsonZone
+	enemy   Enemy
+	eqp     JsonGameEqp
+	zone    JsonZone
+	ptId    int //ptの全体でのユニークid
+	ptCount int //ptに何人いるか
 }
 
 //Fitを返す
@@ -47,29 +60,277 @@ const (
 	PTTypeTTHHDDDB
 )
 
+//n点交差
+func (geneUnit *GeneUnit)IntersectGeneUnitWith(other *GeneUnit, geneEnvironment GeneEnvironment) bool {
+	tradedPickupedPtIds := []int{}
+
+	err := true
+
+	//n個のPTか、Indvを交差
+	for i := 0; i < geneEnvironment.Insections; i++ {
+		//まずランダムに選択
+		pickupedEnemiesA := geneUnit.pickupedEnemies()
+
+		if (len(tradedPickupedPtIds) > 0&&
+		tradedPickupedPtIds[0] == pickupedEnemiesA[0].ptId) {
+			//前回に交換したことあるやつだったらやりなおす
+			continue
+		}
+
+		//何体いるか
+		numForIntersection := len(pickupedEnemiesA)
+
+		//もう一方からも選択
+		pickupedEnemiesB, err2 := other.pickupedEnemiesWithNum(numForIntersection)
+		if (err2) {
+			continue
+		}
+
+		//AとBをトレード
+		Trade(pickupedEnemiesA, pickupedEnemiesB)
+
+		//トレードしたPtIdを保存
+		tradedPickupedPtIds = append(tradedPickupedPtIds, pickupedEnemiesA[0].ptId)
+
+		fmt.Println("[TRADE]tradeDone.")
+		err = false
+	}
+	return err
+}
+
+//交換する
+func Trade(geneUnitEnemiesA []*GeneUnitEnemy, geneUnitEnemiesB []*GeneUnitEnemy) {
+	//	tmp := make([]*GeneUnitEnemy, len(geneUnitEnemiesA))
+	tmp := []*GeneUnitEnemy{}
+
+	fmt.Printf("[TRADE]A:%+v\n", geneUnitEnemiesA)
+	fmt.Printf("[TRADE]B:%+v\n", geneUnitEnemiesB)
+	//B->tmp
+	for _, enemyB := range geneUnitEnemiesB {
+		tmp = append(tmp, enemyB)
+	}
+	//A->B
+	for i, enemyA := range geneUnitEnemiesA {
+		geneUnitEnemiesB[i] = enemyA
+	}
+	//tmp->A
+	//	fmt.Printf("T:%+v\n", tmp)
+	//	fmt.Printf("A:%+v\n", geneUnitEnemiesA)
+	for i, enemyB := range tmp {
+		geneUnitEnemiesA[i] = enemyB
+	}
+}
+
+//ランダムにn体のPTかIndvを選択
+func (geneunit *GeneUnit)pickupedEnemiesWithNum(numForIntersection int) (geneUnitEnemies []*GeneUnitEnemy, err bool) {
+	candidatePtIds := []int{}
+	for ptId := 0; ptId < len(geneunit.GenericUnitEnemies); ptId++ {
+		num := 0
+		for _, enemy := range geneunit.GenericUnitEnemies {
+			if (enemy.ptId == ptId) {
+				num++
+			}
+		}
+		if (num == numForIntersection) {
+			candidatePtIds = append(candidatePtIds, ptId)
+		}
+	}
+	if (len(candidatePtIds) == 0) {
+		//numForIntersectionにあったPTはないので
+		//気合で取り出す
+//		fmt.Printf("candidatePtIds:%+v,numForIntersection:%+v\n", candidatePtIds, numForIntersection)
+		restNeedCount := numForIntersection
+		cnt := 0
+//		fmt.Printf("aho1:restNeedCnt:%d\n", restNeedCount)
+		for _, enemy := range geneunit.GenericUnitEnemies {
+//			fmt.Printf("aho1:restNeedCnt:%d, enemyPtCount:%d\n", restNeedCount, enemy.ptCount)
+			if (enemy.ptCount > restNeedCount) {
+				continue
+			}
+			cnt++
+			geneUnitEnemies = append(geneUnitEnemies, enemy)
+			if (cnt >= enemy.ptCount) {
+				restNeedCount -= enemy.ptCount
+				cnt = 0
+			}
+		}
+		if (restNeedCount != 0) {
+			fmt.Printf("gunu:%d\n", restNeedCount)
+			return nil, true
+		}
+	}else {
+		fmt.Printf("candidatePtIds:%+v,numForIntersection:%+v\n", candidatePtIds, numForIntersection)
+		idx := 0
+		if (len(candidatePtIds) >= 2) {
+			idx = lottery.GetRandomInt(0, len(candidatePtIds) - 1)
+		}
+		choicedPtId := candidatePtIds[idx]
+		for _, enemy := range geneunit.GenericUnitEnemies {
+			if (enemy.ptId == choicedPtId) {
+				geneUnitEnemies = append(geneUnitEnemies, enemy)
+			}
+		}
+	}
+	return geneUnitEnemies, false
+}
+
+//ランダムにPTかIndvを選択する
+func (geneunit *GeneUnit)pickupedEnemies() (geneUnitEnemies []*GeneUnitEnemy) {
+	geneUnitEnemy := geneunit.GenericUnitEnemies[lottery.GetRandomInt(0, len(geneunit.GenericUnitEnemies) - 1)]
+	for _, unitEnemy := range geneunit.GenericUnitEnemies {
+		if (geneUnitEnemy.ptId == unitEnemy.ptId) {
+			geneUnitEnemies = append(geneUnitEnemies, unitEnemy)
+		}
+	}
+	return geneUnitEnemies
+}
+
+//突然変異
+func (geneunit *GeneUnit)MutateSuddenly(geneEnvironment GeneEnvironment) {
+	pickedUpEnemies := geneunit.pickupedEnemies()
+	fmt.Printf("[MUTATE]ptId:%+v, ptCount:%+v\n", pickedUpEnemies[0].ptId, pickedUpEnemies[0].ptCount)
+	for _, enemy := range pickedUpEnemies {
+		enemy.mutate(geneEnvironment)
+	}
+}
+
+//最もFitの高い個を返す
+func GetMaxFitGene(geneUnits []*GeneUnit) *GeneUnit {
+	geneMaxFitUnit := &GeneUnit{Fit:0}
+	for _, unit := range geneUnits {
+		if geneMaxFitUnit.Fit < unit.Fit {
+			geneMaxFitUnit = unit
+		}
+	}
+	return geneMaxFitUnit
+}
+
 func EnemiesWithZone(creteriaEvaluationPerSlice int, zones []JsonZone, questEnvironment QuestEnvironment) []EnemyAppear {
 	geneEnvironment := CreateGeneEnvironment(zones, questEnvironment);
 
+	//次世代の器
+	nextGeneUnits := make([]*GeneUnit, geneEnvironment.NumPerAge)
+
 	//個体をランダムN個生成する
 	//それぞれの適応度計算する
-//	geneUnitsPerAge := CreateRundomsWithGeneUnitsPerAge(geneEnvironment);
-	{
-		//世代操作開始
-		{
-			//次のいずれかを行う
-			//A.個体を2つ選択し、交差
-
-			//B.突然変異
-
-			//C.次世代にそのまま追加
-
+	geneUnitsPerAge := CreateRundomsWithGeneUnitsPerAge(geneEnvironment);
+	for age := 0; age < geneEnvironment.Ages; age++ {
+		println("===age", age)
+		Scan()
+		for i := 0; i < len(geneUnitsPerAge); i++ {
+			//世代操作開始
+			//選択
+			//エリートの選択
+			println("===", i, "/", len(geneUnitsPerAge))
+			relottery:
+			//			println("gomi")
+			{
+				operationType := lottery.GetRandomInt(0, 100)
+				//次のいずれかを行う
+				switch {
+				case operationType <= 1:{
+					//B.突然変異
+					var src1 *GeneUnit
+					var idx int
+					for {
+						//						println("gomi0")
+						idx = lottery.GetRandomInt(0, len(geneUnitsPerAge))
+						src1 = geneUnitsPerAge[idx]
+						if (src1 != nil) {
+							break
+						}
+					}
+					src1.MutateSuddenly(geneEnvironment)
+					nextGeneUnits[i] = src1.copy()
+					geneUnitsPerAge[idx] = nil
+				}
+				case operationType <= 20:{
+					//C.次世代にそのまま追加
+					var src1 *GeneUnit
+					var idx int
+					for {
+						//					println("gomi1")
+						//idx = lottery.GetRandomInt(0, len(geneUnitsPerAge) - 1)
+						idx = lottery.GetRandomInt(0, len(geneUnitsPerAge))
+						/*
+						fmt.Printf("[COPY]unko50--:%+v len:%d, cap:%d, idx:%d\n",
+							geneUnitsPerAge, len(geneUnitsPerAge), cap(geneUnitsPerAge), idx)
+							*/
+						src1 = geneUnitsPerAge[idx]
+						if (src1 != nil) {
+							break
+						}
+					}
+					fmt.Printf("[COPY]idxPerAge:%+v\n", idx)
+					nextGeneUnits[i] = geneUnitsPerAge[idx].copy()
+					geneUnitsPerAge[idx] = nil
+				}
+				case operationType <= 100:{
+					if (i + 1 >= len(geneUnitsPerAge)) {
+						goto relottery
+					}else {
+						//A.個体を2つ選択し、交差
+						var src1 *GeneUnit
+						var src2 *GeneUnit
+						var idx1 int
+						var idx2 int
+						for {
+							//							println("gomi2")
+							idx1 = lottery.GetRandomInt(0, len(geneUnitsPerAge))
+							src1 = geneUnitsPerAge[idx1]
+							if (src1 != nil) {
+								break
+							}
+						}
+						for {
+							//							println("gomi3")
+							idx2 = lottery.GetRandomInt(0, len(geneUnitsPerAge))
+							src2 = geneUnitsPerAge[idx2]
+							if (src2 != nil) {
+								break
+							}
+						}
+						fmt.Printf("[TRADE]startTrade:\n")
+						err := src1.IntersectGeneUnitWith(src2, geneEnvironment)
+						if (err) {
+							fmt.Printf("[TRADE]trade failed.....:\n")
+							goto relottery
+						}
+						fmt.Printf("[TRADE]trade completed!!!:\n")
+						nextGeneUnits[i] = src1.copy()
+						nextGeneUnits[i + 1] = src2.copy()
+						geneUnitsPerAge[idx1] = nil
+						geneUnitsPerAge[idx2] = nil
+						i++
+					}
+				}
+				}
+			}
+			fmt.Printf("[%+v]\n->\n[%+v]\n", geneUnitsPerAge, nextGeneUnits)
 		}
 		//次世代が一定になっていれば次世代を対象として世代操作開始に戻る
+		geneUnitsPerAge = nextGeneUnits
+		nextGeneUnits = make([]*GeneUnit, geneEnvironment.NumPerAge)
+		fmt.Printf("[next to age:%+v -> %+v\n", geneUnitsPerAge, nextGeneUnits)
 
+		maxFitGeneUnit := GetMaxFitGene(geneUnitsPerAge)
+		fmt.Printf("maxFitGene:%+v\n", *maxFitGeneUnit)
+		fmt.Printf("[fit age:%d]%d\n", age, maxFitGeneUnit.Fit)
+
+		Scan()
 	}
 
+	//最終世代で最もFitが高いものを選び、EnemyAppearに変換する
+	maxFitGeneUnit := GetMaxFitGene(geneUnitsPerAge)
+	fmt.Printf("[fit final]%d\n", maxFitGeneUnit.Fit)
 
 	return nil
+}
+
+func Scan() {
+	return
+	ore := 1
+	fmt.Scan(&ore)
 }
 
 //ランダムなZoneを返す
@@ -95,8 +356,9 @@ func GetRoleRandomBuff() Role {
 }
 
 //指定Roleのランダムな敵を生成
-func CreateRundomEnemyWithType(geneEnvironment GeneEnvironment, role Role, zone JsonZone) GeneUnitEnemy {
-	geneUnitEnemy := GeneUnitEnemy{}
+func CreateRundomEnemyWithType(geneEnvironment GeneEnvironment, role Role, zone JsonZone, ptId int, ptCount int) *GeneUnitEnemy {
+	geneUnitEnemy := &GeneUnitEnemy{ptId: ptId, ptCount: ptCount}
+
 	//種別が決定
 	geneUnitEnemy.enemy = PickUpRandomSampleWithRole(geneEnvironment.EnemySamples, role)
 
@@ -110,58 +372,68 @@ func CreateRundomEnemyWithType(geneEnvironment GeneEnvironment, role Role, zone 
 }
 
 //ランダムなフルパーティーの生成
-func CreateRundomEnemyFPT(geneEnvironment GeneEnvironment) GenericEnemyPT {
-	genericEnemyFpt := GenericEnemyPT{}
+func CreateRundomEnemyFPT(geneEnvironment GeneEnvironment, ptId int) GenericEnemyPT {
+	genericEnemyFpt := GenericEnemyPT{PtId: ptId}
 	genericEnemyFpt.LptType = PTType(lottery.GetRandomInt(int(PTTypeTTHHDDDD), int(PTTypeTTHHDDDB)))
 	genericEnemyFpt.Zone = geneEnvironment.choiceRandomZone()
-	enemies := []GeneUnitEnemy{}
-	enemies = append(enemies, CreateRundomEnemyWithType(geneEnvironment, RoleTank, genericEnemyFpt.Zone))
-	enemies = append(enemies, CreateRundomEnemyWithType(geneEnvironment, RoleTank, genericEnemyFpt.Zone))
-	enemies = append(enemies, CreateRundomEnemyWithType(geneEnvironment, RoleHealer, genericEnemyFpt.Zone))
-	enemies = append(enemies, CreateRundomEnemyWithType(geneEnvironment, RoleHealer, genericEnemyFpt.Zone))
-	enemies = append(enemies, CreateRundomEnemyWithType(geneEnvironment, GetRoleRandomDPS(), genericEnemyFpt.Zone))
-	enemies = append(enemies, CreateRundomEnemyWithType(geneEnvironment, GetRoleRandomDPS(), genericEnemyFpt.Zone))
-	enemies = append(enemies, CreateRundomEnemyWithType(geneEnvironment, GetRoleRandomDPS(), genericEnemyFpt.Zone))
+	enemies := []*GeneUnitEnemy{}
+	enemies = append(enemies, CreateRundomEnemyWithType(geneEnvironment, RoleTank, genericEnemyFpt.Zone, ptId, 8))
+	enemies = append(enemies, CreateRundomEnemyWithType(geneEnvironment, RoleTank, genericEnemyFpt.Zone, ptId, 8))
+	enemies = append(enemies, CreateRundomEnemyWithType(geneEnvironment, RoleHealer, genericEnemyFpt.Zone, ptId, 8))
+	enemies = append(enemies, CreateRundomEnemyWithType(geneEnvironment, RoleHealer, genericEnemyFpt.Zone, ptId, 8))
+	enemies = append(enemies, CreateRundomEnemyWithType(geneEnvironment, GetRoleRandomDPS(), genericEnemyFpt.Zone, ptId, 8))
+	enemies = append(enemies, CreateRundomEnemyWithType(geneEnvironment, GetRoleRandomDPS(), genericEnemyFpt.Zone, ptId, 8))
+	enemies = append(enemies, CreateRundomEnemyWithType(geneEnvironment, GetRoleRandomDPS(), genericEnemyFpt.Zone, ptId, 8))
 	switch genericEnemyFpt.LptType {
 	case PTTypeTTHHDDDD:
-		enemies = append(enemies, CreateRundomEnemyWithType(geneEnvironment, GetRoleRandomDPS(), genericEnemyFpt.Zone))
+		enemies = append(enemies, CreateRundomEnemyWithType(geneEnvironment, GetRoleRandomDPS(), genericEnemyFpt.Zone, ptId, 8))
 	case PTTypeTTHHDDDB:
-		enemies = append(enemies, CreateRundomEnemyWithType(geneEnvironment, GetRoleRandomBuff(), genericEnemyFpt.Zone))
+		enemies = append(enemies, CreateRundomEnemyWithType(geneEnvironment, GetRoleRandomBuff(), genericEnemyFpt.Zone, ptId, 8))
 	}
 	genericEnemyFpt.Enemies = enemies
 	return genericEnemyFpt
 }
 
 //ランダムなソロ敵を生成
-func CreateRundomEnemyIndv(geneEnvironment GeneEnvironment) GeneUnitEnemy {
+func CreateRundomEnemyIndv(geneEnvironment GeneEnvironment, ptId int) *GeneUnitEnemy {
 	role := GetRoleRandom()
 	zone := geneEnvironment.choiceRandomZone()
-	genericEnemy := CreateRundomEnemyWithType(geneEnvironment, role, zone)
+	genericEnemy := CreateRundomEnemyWithType(geneEnvironment, role, zone, ptId, 1)
 	return genericEnemy
 }
 
+//突然変異
+func (geneUnitEnemy *GeneUnitEnemy)mutate(geneEnvironment GeneEnvironment) {
+	geneUnitEnemy = CreateRundomEnemyWithType(geneEnvironment,
+		geneUnitEnemy.enemy.role,
+		geneUnitEnemy.zone,
+		geneUnitEnemy.ptId,
+		geneUnitEnemy.ptCount,
+	)
+}
+
 //ランダムなライトパーティの生成
-func CreateRundomEnemyLPT(geneEnvironment GeneEnvironment) GenericEnemyPT {
-	genericEnemyLpt := GenericEnemyPT{}
+func CreateRundomEnemyLPT(geneEnvironment GeneEnvironment, ptId int) GenericEnemyPT {
+	genericEnemyLpt := GenericEnemyPT{PtId:ptId}
 	genericEnemyLpt.LptType = PTType(lottery.GetRandomInt(int(PTTypeTHD), int(PTTypeTHDDB)))
 	genericEnemyLpt.Zone = geneEnvironment.choiceRandomZone()
-	enemies := []GeneUnitEnemy{}
+	enemies := []*GeneUnitEnemy{}
 	switch genericEnemyLpt.LptType {
 	case PTTypeTHD:
-		enemies = append(enemies, CreateRundomEnemyWithType(geneEnvironment, RoleTank, genericEnemyLpt.Zone))
-		enemies = append(enemies, CreateRundomEnemyWithType(geneEnvironment, RoleHealer, genericEnemyLpt.Zone))
-		enemies = append(enemies, CreateRundomEnemyWithType(geneEnvironment, GetRoleRandomDPS(), genericEnemyLpt.Zone))
+		enemies = append(enemies, CreateRundomEnemyWithType(geneEnvironment, RoleTank, genericEnemyLpt.Zone, ptId, 3))
+		enemies = append(enemies, CreateRundomEnemyWithType(geneEnvironment, RoleHealer, genericEnemyLpt.Zone, ptId, 3))
+		enemies = append(enemies, CreateRundomEnemyWithType(geneEnvironment, GetRoleRandomDPS(), genericEnemyLpt.Zone, ptId, 3))
 	case PTTypeTHDD:
-		enemies = append(enemies, CreateRundomEnemyWithType(geneEnvironment, RoleTank, genericEnemyLpt.Zone))
-		enemies = append(enemies, CreateRundomEnemyWithType(geneEnvironment, RoleHealer, genericEnemyLpt.Zone))
-		enemies = append(enemies, CreateRundomEnemyWithType(geneEnvironment, GetRoleRandomDPS(), genericEnemyLpt.Zone))
-		enemies = append(enemies, CreateRundomEnemyWithType(geneEnvironment, GetRoleRandomDPS(), genericEnemyLpt.Zone))
+		enemies = append(enemies, CreateRundomEnemyWithType(geneEnvironment, RoleTank, genericEnemyLpt.Zone, ptId, 4))
+		enemies = append(enemies, CreateRundomEnemyWithType(geneEnvironment, RoleHealer, genericEnemyLpt.Zone, ptId, 4))
+		enemies = append(enemies, CreateRundomEnemyWithType(geneEnvironment, GetRoleRandomDPS(), genericEnemyLpt.Zone, ptId, 4))
+		enemies = append(enemies, CreateRundomEnemyWithType(geneEnvironment, GetRoleRandomDPS(), genericEnemyLpt.Zone, ptId, 4))
 	case PTTypeTHDDB:
-		enemies = append(enemies, CreateRundomEnemyWithType(geneEnvironment, RoleTank, genericEnemyLpt.Zone))
-		enemies = append(enemies, CreateRundomEnemyWithType(geneEnvironment, RoleHealer, genericEnemyLpt.Zone))
-		enemies = append(enemies, CreateRundomEnemyWithType(geneEnvironment, GetRoleRandomDPS(), genericEnemyLpt.Zone))
-		enemies = append(enemies, CreateRundomEnemyWithType(geneEnvironment, GetRoleRandomDPS(), genericEnemyLpt.Zone))
-		enemies = append(enemies, CreateRundomEnemyWithType(geneEnvironment, GetRoleRandomBuff(), genericEnemyLpt.Zone))
+		enemies = append(enemies, CreateRundomEnemyWithType(geneEnvironment, RoleTank, genericEnemyLpt.Zone, ptId, 5))
+		enemies = append(enemies, CreateRundomEnemyWithType(geneEnvironment, RoleHealer, genericEnemyLpt.Zone, ptId, 5))
+		enemies = append(enemies, CreateRundomEnemyWithType(geneEnvironment, GetRoleRandomDPS(), genericEnemyLpt.Zone, ptId, 5))
+		enemies = append(enemies, CreateRundomEnemyWithType(geneEnvironment, GetRoleRandomDPS(), genericEnemyLpt.Zone, ptId, 5))
+		enemies = append(enemies, CreateRundomEnemyWithType(geneEnvironment, GetRoleRandomBuff(), genericEnemyLpt.Zone, ptId, 5))
 	}
 	genericEnemyLpt.Enemies = enemies
 	return genericEnemyLpt
@@ -171,39 +443,45 @@ func CreateRundomEnemyLPT(geneEnvironment GeneEnvironment) GenericEnemyPT {
 
 //パーティ
 type GenericEnemyPT struct {
+	PtId    int
 	LptType PTType //パーティの種別
 	Zone    JsonZone
-	Enemies []GeneUnitEnemy
+	Enemies []*GeneUnitEnemy
 }
 
 
 //ランダムな個体を生成
-func CreateRandomGeneUnit(geneEnvironment GeneEnvironment) *GeneUnit {
+func CreateRandomGeneUnit(geneEnvironment GeneEnvironment, ptId *int) *GeneUnit {
 	geneUnit := &GeneUnit{}
 	geneUnit.GenericEnemyNum = lottery.GetRandomInt(10, 80)
 	geneUnit.GenericEnemyLPT_Num = lottery.GetRandomInt(0, 20) //3-5人パーティ
 	geneUnit.GenericEnemyFPT_Num = lottery.GetRandomInt(0, 10) //8人パーティ
 
-	geneUnitEnemies := []GeneUnitEnemy{}
+	geneUnitEnemies := []*GeneUnitEnemy{}
 
 	//敵生成
 	for i := 0; i < geneUnit.GenericEnemyLPT_Num; i++ {
-		genericEnemyLPT := CreateRundomEnemyLPT(geneEnvironment)
+		genericEnemyLPT := CreateRundomEnemyLPT(geneEnvironment, *ptId + i)
 		for j := 0; j < len(genericEnemyLPT.Enemies); j++ {
 			geneUnitEnemies = append(geneUnitEnemies, genericEnemyLPT.Enemies[j])
 		}
+		*ptId = i + *ptId
 	}
+	*ptId++
 	for i := 0; i < geneUnit.GenericEnemyFPT_Num; i++ {
-		genericEnemyFPT := CreateRundomEnemyFPT(geneEnvironment)
+		genericEnemyFPT := CreateRundomEnemyFPT(geneEnvironment, *ptId + i)
 		for j := 0; j < len(genericEnemyFPT.Enemies); j++ {
 			geneUnitEnemies = append(geneUnitEnemies, genericEnemyFPT.Enemies[j])
 		}
+		*ptId = i + *ptId
 	}
+	*ptId++
 	geneUnit.GenericEnemyIndv_Num = geneUnit.GenericEnemyNum - len(geneUnitEnemies)
 	for i := 0; i < geneUnit.GenericEnemyIndv_Num; i++ {
-		indvEnemy := CreateRundomEnemyIndv(geneEnvironment)
+		indvEnemy := CreateRundomEnemyIndv(geneEnvironment, *ptId + i)
 		geneUnitEnemies = append(geneUnitEnemies, indvEnemy)
 	}
+	*ptId++
 
 	geneUnit.GenericUnitEnemies = geneUnitEnemies
 
@@ -224,8 +502,9 @@ func (geneUnit *GeneUnit) calcFit() {
 func CreateRundomsWithGeneUnitsPerAge(geneEnvironment GeneEnvironment) []*GeneUnit {
 	geneUnitsPerAge := []*GeneUnit{}
 
+	ptId := 0
 	for i := 0; i < geneEnvironment.NumPerAge; i++ {
-		geneUnit := CreateRandomGeneUnit(geneEnvironment)
+		geneUnit := CreateRandomGeneUnit(geneEnvironment, &ptId)
 		geneUnitsPerAge = append(geneUnitsPerAge, geneUnit)
 	}
 
@@ -234,13 +513,17 @@ func CreateRundomsWithGeneUnitsPerAge(geneEnvironment GeneEnvironment) []*GeneUn
 
 //アルゴリズムで使う変数を一括で作る
 func CreateGeneEnvironment(zones []JsonZone, questEnvironment QuestEnvironment) GeneEnvironment {
-	dst := []JsonZone{}
+	//	dst := [len(zones)]JsonZone{}
+	dst := make([]JsonZone, len(zones))
+
 	copy(dst, zones)
 	return GeneEnvironment{
 		NumPerAge: 10,
 		Zones: dst,
 		QuestEnvironment: questEnvironment,
 		EnemySamples: CreateEnemySamples(),
+		Ages: 10,
+		Insections: 2,
 	}
 }
 
