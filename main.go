@@ -16,10 +16,12 @@ func main() {
 	var mapFilePath string
 	var questFilePath string
 	var eqpFilePath string
+	var enemyFilePath string
 	var questId int
 	flag.StringVar(&mapFilePath, "map", "map.json", "APP_PARTS_FILE_PATH")
 	flag.StringVar(&questFilePath, "quest", "quest.json", "APP_PARTS_FILE_PATH")
 	flag.StringVar(&eqpFilePath, "eqp", "eqp.json", "APP_PARTS_FILE_PATH")
+	flag.StringVar(&enemyFilePath, "character", "character.json", "APP_PARTS_FILE_PATH")
 	flag.IntVar(&questId, "questId", 0, "APP_PARTS_FILE_PATH")
 	flag.Parse()
 
@@ -32,6 +34,8 @@ func main() {
 	quests := CreateGameQuests(questFilePath)
 	fmt.Println("==eqp=")
 	eqps := CreateGameEqps(eqpFilePath)
+	fmt.Println("==characters=")
+	  CreateEnemySamplesJ(enemyFilePath)
 
 
 	currentQuest := quests[strconv.Itoa(questId)]

@@ -2,7 +2,7 @@ package main
 import (
 	"github.com/adachic/lottery"
 	"fmt"
-	"gopkg.in/go-pp/pp.v2"
+//	"gopkg.in/go-pp/pp.v2"
 )
 
 //遺伝的アルゴリズムのパラメータ
@@ -343,7 +343,7 @@ func EnemiesWithZone(creteriaEvaluationPerSlice int, zones []JsonZone, questEnvi
 }
 
 func Scan() {
-	return
+//	return
 	ore := 1
 	fmt.Scan(&ore)
 }
