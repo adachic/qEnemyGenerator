@@ -260,6 +260,9 @@ func CreateEnemySamples() []Enemy {
 	enemies := []Enemy{}
 	enemyMap := CreateEnemySamplesJ("./debug/character.json")
 	for key, enemy := range enemyMap {
+		if len(enemy.getRoles()) == 0{
+			continue
+		}
 		enemies = append(enemies, CreateEnemy(key, enemy))
 	}
 	/*
@@ -346,6 +349,9 @@ func (enemy Enemy)getFit() int {
 //所持しているRoleをランダムに選択
 func (enemy Enemy) pickUpRandomRole() Role{
 	rolesCount := len(enemy.roles)
+	if rolesCount == 1 {
+		return enemy.roles[0]
+	}
 	idx := lottery.GetRandomInt(0, rolesCount)
 	return enemy.roles[idx]
 }

@@ -35,7 +35,7 @@ func main() {
 	fmt.Println("==eqp=")
 	eqps := CreateGameEqps(eqpFilePath)
 	fmt.Println("==characters=")
-	  CreateEnemySamplesJ(enemyFilePath)
+	CreateEnemySamplesJ(enemyFilePath)
 
 
 	currentQuest := quests[strconv.Itoa(questId)]
