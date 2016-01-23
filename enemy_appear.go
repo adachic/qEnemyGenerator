@@ -10,12 +10,13 @@ const (
 
 type EnemyAppear struct {
 	Id           int
-	Quest        JsonGameQuestIn
 	Sample       EnemySample
 	Zone         JsonZone
 	AIType       AIType
-
 	AppearTime   int
+	QuestId      int
+
+	Quest        JsonGameQuestIn
 	IntervalTime int
 	Num          int
 }
@@ -209,8 +210,14 @@ enemySamples []EnemySample, zones []JsonZone, questsOut []JsonGameQuestOut) {
 	}
 
 	//AppearのIdとか足りてないやつをセットする
-
-	//ナップザック結果の結合
+	id := 1
+	for _, enemyAppear := range enemyAppears{
+		enemyAppear.Id = id
+		enemyAppear.QuestId = quest.Id
+		enemyAppear.Sample.UnitLevel = quest.Difficult
+		enemyAppear.Sample.mainEqpLevel = quest.Difficult
+		id++
+	}
 
 	return enemyAppears, enemySamples, zones, questsOut
 }

@@ -407,8 +407,6 @@ func EnemiesWithZone(creteriaEvaluationPerSlice int, zones []JsonZone, questEnvi
 			Zone         :enemy.zone,
 			AIType       :EQPTypeAttacker,
 			AppearTime   :(sliceIdx * geneEnvironment.QuestEnvironment.SecondsPerSlice * 1000) + AdjustAdditionalAppearTime(enemy),
-			//IntervalTime int
-			//Num          int
 		}
 		enemyAppears = append(enemyAppears, enemyAppear)
 	}
