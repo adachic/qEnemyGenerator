@@ -39,9 +39,33 @@ func (geneUnit *GeneUnit)copy() *GeneUnit {
 type GeneUnitEnemy struct {
 	enemy   Enemy
 	eqp     JsonGameEqp
+	eqpSub1 JsonGameEqp
+	eqpSub2 JsonGameEqp
+	eqpSub3 JsonGameEqp
 	zone    JsonZone
 	ptId    int //ptの全体でのユニークid
 	ptCount int //ptに何人いるか
+}
+
+//EQPのFit
+func (geneUnitEnemy GeneUnitEnemy)getEQPFit() int {
+	fit := 0
+	fit = geneUnitEnemy.eqp.getFit()
+	if(geneUnitEnemy.enemy.characterId == CharacterIdShield){
+		fit += geneUnitEnemy.eqpSub1.getFit()
+		fit += geneUnitEnemy.eqpSub2.getFit()
+	}
+	return fit
+}
+
+//ランダムな装備を身に付ける
+func (geneUnitEnemy *GeneUnitEnemy)attachEQPs(){
+	geneUnitEnemy.eqp = PickUpEQPWithSampleMainEnemy(geneUnitEnemy.enemy)
+	if(geneUnitEnemy.enemy.characterId == CharacterIdShield){
+		//とりあえずはプレートメイル兵のみ防具をつける
+		geneUnitEnemy.eqpSub1 = PickUpRandomShield(geneUnitEnemy.enemy)
+		geneUnitEnemy.eqpSub2 = PickUpRandomBody(geneUnitEnemy.enemy)
+	}
 }
 
 //Fitを返す
@@ -53,8 +77,9 @@ func (geneUnit *GeneUnit)getFit(geneEnvironment GeneEnvironment) int {
 func (geneUnitEnemy GeneUnitEnemy)dumpFit(geneEnvironment GeneEnvironment) {
 	fit1 := geneUnitEnemy.enemy.getFit()
 	fit2 := geneUnitEnemy.zone.getFit(geneUnitEnemy.enemy.fixedRole, geneEnvironment)
-	fit3 := geneUnitEnemy.eqp.getFit()
-	fmt.Printf("[(%d):%d/%d/%d]", fit1+fit2+fit3,fit1,fit2,fit3)
+	fit3 := geneUnitEnemy.getEQPFit()
+	fmt.Printf("[(%d):%d/%d/%d]", fit1 + fit2 + fit3, fit1, fit2, fit3)
+//	fmt.Printf("%+v", geneUnitEnemy)
 }
 
 
@@ -63,7 +88,7 @@ func (geneUnitEnemy GeneUnitEnemy)getFit(geneEnvironment GeneEnvironment) int {
 	fit := 0
 	fit += geneUnitEnemy.enemy.getFit()
 	fit += geneUnitEnemy.zone.getFit(geneUnitEnemy.enemy.fixedRole, geneEnvironment)
-	fit += geneUnitEnemy.eqp.getFit()
+	fit += geneUnitEnemy.getEQPFit()
 	return fit
 }
 
@@ -212,7 +237,7 @@ func (geneunit *GeneUnit)MutateSuddenly(geneEnvironment GeneEnvironment) {
 }
 
 //最もFitの高い個を返す
-func GetMaxFitGene(geneUnits []*GeneUnit,geneEnvironment GeneEnvironment) *GeneUnit {
+func GetMaxFitGene(geneUnits []*GeneUnit, geneEnvironment GeneEnvironment) *GeneUnit {
 	geneMaxFitUnit := &GeneUnit{Fit:0}
 	for _, unit := range geneUnits {
 		if geneMaxFitUnit.Fit < unit.getFit(geneEnvironment) {
@@ -391,7 +416,7 @@ func CreateRundomEnemyWithType(geneEnvironment GeneEnvironment, role Role, zone 
 	geneUnitEnemy.enemy = PickUpRandomSampleWithRole(geneEnvironment.EnemySamples, role)
 
 	//EQP
-	geneUnitEnemy.eqp = PickUpEQPWithSampleEnemy(geneUnitEnemy.enemy)
+	geneUnitEnemy.attachEQPs()
 
 	//Zone
 	geneUnitEnemy.zone = zone
@@ -514,10 +539,9 @@ func CreateRandomGeneUnit(canCreateMaxNum int, geneEnvironment GeneEnvironment, 
 
 	geneUnit.GenericUnitEnemies = geneUnitEnemies
 	geneUnit.calcFit(geneEnvironment)
-	fmt.Printf("unko:geneUnitEnemies:%+v fit(%d) ", geneUnitEnemies, geneUnit.Fit)
+	fmt.Printf("[GENE] enemy_num:%d fit(%d) \n", len(geneUnitEnemies), geneUnit.Fit)
 
 	geneUnit.dumpEnemyFit(geneEnvironment)
-	fmt.Printf("\n")
 
 	return geneUnit
 }
@@ -527,6 +551,7 @@ func (geneUnit *GeneUnit) dumpEnemyFit(geneEnvironment GeneEnvironment) {
 	for _, enemy := range geneUnit.GenericUnitEnemies {
 		enemy.dumpFit(geneEnvironment)
 	}
+	fmt.Printf("\n")
 }
 
 //Fitの算出

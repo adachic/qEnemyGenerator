@@ -7,7 +7,6 @@ import (
 	"gopkg.in/go-pp/pp.v2"
 )
 
-
 type Role int
 const (
 	RoleTank  Role = iota
@@ -72,6 +71,10 @@ type Enemy struct {
 
 	fit         int
 	enemyJson   EnemyJson
+}
+
+func (enemy Enemy)isMonster() bool{
+	return enemy.characterId >= CharacterIdSlimeB
 }
 
 //クエスト
@@ -266,15 +269,6 @@ func CreateEnemySamples() []Enemy {
 		}
 		enemies = append(enemies, CreateEnemy(key, enemy))
 	}
-	/*
-	enemies = append(enemies, Enemy{characterId:CharacterIdSword, role:RoleTank})
-	enemies = append(enemies, Enemy{characterId:CharacterIdSword, role:RoleDpsMelee})
-	enemies = append(enemies, Enemy{characterId:CharacterIdSword, role:RoleDpsRanged})
-	enemies = append(enemies, Enemy{characterId:CharacterIdSword, role:RoleDpsAoe})
-	enemies = append(enemies, Enemy{characterId:CharacterIdSword, role:RoleHealer})
-	enemies = append(enemies, Enemy{characterId:CharacterIdSword, role:RoleBuff})
-	enemies = append(enemies, Enemy{characterId:CharacterIdSword, role:RoleDeBuff})
-	*/
 	return enemies
 }
 
@@ -304,49 +298,6 @@ func PickUpRandomSampleWithRole(enemiesSample []Enemy, role Role) Enemy {
 //Fitを返す
 func (enemy Enemy)getFit() int {
 	return enemy.enemyJson.Sum
-
-	switch enemy.characterId {
-	case CharacterIdSword :
-	case CharacterIdArcher:
-	case CharacterIdMage:
-	case CharacterIdHealer:
-	case CharacterIdThief:
-	case CharacterIdWarlock:
-	case CharacterIdNinja:
-	case CharacterIdSlimeB:
-	case CharacterIdSlimeR:
-	case CharacterIdSlimeY:
-	case CharacterIdSlimeG:
-	case CharacterIdSlimeD:
-	case CharacterIdSkeleton:
-	case CharacterIdPenguin:
-	case CharacterIdGoblin:
-	case CharacterIdGoblinC:
-	case CharacterIdLizard:
-	case CharacterIdLizardP:
-	case CharacterIdLizardC:
-	case CharacterIdFrog:
-	case CharacterIdFrogP:
-	case CharacterIdBat:
-	case CharacterIdBatI:
-	case CharacterIdBatP:
-	case CharacterIdGhost:
-	case CharacterIdGhostI:
-	case CharacterIdSpore:
-	case CharacterIdSporeP:
-	case CharacterIdSporeC:
-	case CharacterIdNecR:
-	case CharacterIdNecP:
-	case CharacterIdNecD:
-	case CharacterIdWitch:
-	case CharacterIdWitchV:
-	case CharacterIdWitchS:
-	case CharacterIdGigantI:
-	case CharacterIdGigantP:
-	case CharacterIdGigantC:
-	case CharacterIdSkeletonW:
-	}
-	return 30
 }
 
 //所持しているRoleをランダムに選択

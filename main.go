@@ -37,7 +37,6 @@ func main() {
 	fmt.Println("==characters=")
 	CreateEnemySamplesJ(enemyFilePath)
 
-
 	currentQuest := quests[strconv.Itoa(questId)]
 	//出現難度配分
 	//出現タイミング
