@@ -396,7 +396,6 @@ func EnemiesWithZone(creteriaEvaluationPerSlice int, zones []JsonZone, questEnvi
 
 		//最終世代で最もFitが高いものを選び、EnemyAppearに変換する
 //		maxFitGeneUnit2 := GetMaxFitGene(geneUnitsPerAge, geneEnvironment)
-
 //		fmt.Printf("[fit final2]%d\n", maxFitGeneUnit2.getFit(geneEnvironment))
 
 		fmt.Printf("[]geneUnitsPerAge:%+v\n", geneUnitsPerAge)
@@ -537,8 +536,16 @@ type GenericEnemyPT struct {
 //ランダムな個体を生成
 func CreateRandomGeneUnit(canCreateMaxNum int, geneEnvironment GeneEnvironment, ptId *int) *GeneUnit {
 	geneUnit := &GeneUnit{}
-	willCreateNum := lottery.GetRandomInt(1, canCreateMaxNum)
-	geneUnit.GenericEnemyNum = lottery.GetRandomInt(1, willCreateNum)
+	willCreateNum := 0
+	min:=canCreateMaxNum - 2
+	max:=canCreateMaxNum + 2
+	{
+		if(min < 1){
+			min = 1
+		}
+		willCreateNum = lottery.GetRandomInt(min, max)
+	}
+	geneUnit.GenericEnemyNum = willCreateNum
 	geneUnit.GenericEnemyLPT_Num = lottery.GetRandomInt(0, willCreateNum / 3) //3-5人パーティ
 	geneUnit.GenericEnemyFPT_Num = lottery.GetRandomInt(0, willCreateNum / 8) //8人パーティ
 
