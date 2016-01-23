@@ -10,7 +10,7 @@ const (
 
 type EnemyAppear struct {
 	Id           int
-	Sample       EnemySample
+	Sample       *EnemySample
 	Zone         JsonZone
 	AIType       AIType
 	AppearTime   int
@@ -25,11 +25,11 @@ type EnemySample struct {
 	Id           int
 	CharacterId  CharacterId
 	UnitLevel    int
-	mainEqp      JsonGameEqp
-	mainEqpLevel int
-	subEqp1      JsonGameEqp
-	subEqp2      JsonGameEqp
-	subEqp3      JsonGameEqp
+	MainEqp JsonGameEqp
+	MainEqpLevel int
+	SubEqp1 JsonGameEqp
+	SubEqp2 JsonGameEqp
+	SubEqp3 JsonGameEqp
 }
 
 type JsonZone struct {
@@ -183,8 +183,8 @@ type GameZone struct {
 
 //敵出現情報,クエスト情報を返す
 func CreateEnemyAppears(gamePartsDict map[string]GameParts, gameMap JsonGameMap,
-quest JsonGameQuestIn, eqps map[string]JsonGameEqp, questEnvironment QuestEnvironment) (enemyAppears []EnemyAppear,
-enemySamples []EnemySample, zones []JsonZone, questsOut []JsonGameQuestOut) {
+quest JsonGameQuestIn, eqps map[string]JsonGameEqp, questEnvironment QuestEnvironment) (enemyAppears []*EnemyAppear,
+ zones []JsonZone) {
 
 	gameMap.allocJungle3(gamePartsDict)
 
@@ -215,11 +215,10 @@ enemySamples []EnemySample, zones []JsonZone, questsOut []JsonGameQuestOut) {
 		enemyAppear.Id = id
 		enemyAppear.QuestId = quest.Id
 		enemyAppear.Sample.UnitLevel = quest.Difficult
-		enemyAppear.Sample.mainEqpLevel = quest.Difficult
+		enemyAppear.Sample.MainEqpLevel = quest.Difficult
 		id++
 	}
-
-	return enemyAppears, enemySamples, zones, questsOut
+	return enemyAppears, zones
 }
 
 

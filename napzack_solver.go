@@ -269,7 +269,8 @@ func GetMaxFitGene(geneUnits []*GeneUnit, geneEnvironment GeneEnvironment) *Gene
 	return geneMaxFitUnit
 }
 
-func EnemiesWithZone(creteriaEvaluationPerSlice int, zones []JsonZone, questEnvironment QuestEnvironment, geneEnvironment GeneEnvironment, sliceIdx int) []EnemyAppear {
+func EnemiesWithZone(creteriaEvaluationPerSlice int, zones []JsonZone,
+questEnvironment QuestEnvironment, geneEnvironment GeneEnvironment, sliceIdx int) []*EnemyAppear {
 
 	println("=== creteriaEvaluationPerSlice:", creteriaEvaluationPerSlice)
 
@@ -398,9 +399,9 @@ func EnemiesWithZone(creteriaEvaluationPerSlice int, zones []JsonZone, questEnvi
 		fmt.Printf("[fit final enemy]%+v\n", enemy)
 	}
 
-	enemyAppears := []EnemyAppear{}
+	enemyAppears := []*EnemyAppear{}
 	for _, enemy := range maxFitGeneUnit.GenericUnitEnemies {
-		enemyAppear := EnemyAppear{
+		enemyAppear := &EnemyAppear{
 			//Id           int
 			//Quest        JsonGameQuestIn
 			Sample       :enemy.createEnemySample(),
@@ -433,23 +434,23 @@ func AdjustAdditionalAppearTime(geneUnitEnemy *GeneUnitEnemy) int {
 	return 0
 }
 
-func (geneUnitEnemy *GeneUnitEnemy)createEnemySample() EnemySample {
+func (geneUnitEnemy *GeneUnitEnemy)createEnemySample() *EnemySample {
 	if(geneUnitEnemy.enemy.characterId == CharacterIdShield){
-		return EnemySample{
+		return &EnemySample{
 			//		Id:
 			CharacterId  : geneUnitEnemy.enemy.characterId,
 			//		UnitLevel    :
-			mainEqp      : geneUnitEnemy.eqp,
+			MainEqp      : geneUnitEnemy.eqp,
 			//		mainEqpLevel int
-			subEqp1      : geneUnitEnemy.eqpSub1,
-			subEqp2      : geneUnitEnemy.eqpSub2,
+			SubEqp1      : geneUnitEnemy.eqpSub1,
+			SubEqp2      : geneUnitEnemy.eqpSub2,
 		}
 	}
-	return EnemySample{
+	return &EnemySample{
 		//		Id:
 		CharacterId  : geneUnitEnemy.enemy.characterId,
 		//		UnitLevel    :
-		mainEqp      : geneUnitEnemy.eqp,
+		MainEqp      : geneUnitEnemy.eqp,
 		//		mainEqpLevel int
 	}
 }
