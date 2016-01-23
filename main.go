@@ -44,7 +44,7 @@ func main() {
 	questEnvironment := CreateQuestEnvironment(currentQuest)
 
 	//種類・強さ・数・タイミング・位置
-	//	enemyAppears, enemySamples, zones, quests := CreateEnemyAppears(gameMap, quests, eqps, questId, questEnvironment)
+	//enemyAppears, enemySamples, zones, quests := CreateEnemyAppears(gameMap, quests, eqps, questId, questEnvironment)
 	enemyAppears, enemySamples, zones, questsOut := CreateEnemyAppears(gamePartsDict, gameMap, currentQuest, eqps, questEnvironment)
 
 	//敵サンプル出力 enemy_sample.json/csv

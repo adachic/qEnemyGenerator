@@ -249,9 +249,9 @@ func GetNearlyFitGene(geneUnits []*GeneUnit, creteriaEvaluationPerSlice int, gen
 		if (nearlyDiff < 0) {
 			nearlyDiff = -nearlyDiff
 		}
-//		fmt.Printf("diff:%d, nealydiff:%d,creteria:%d, fit:%d\n",diff, nearlyDiff, creteriaEvaluationPerSlice, unit.getFit(geneEnvironment))
+		//		fmt.Printf("diff:%d, nealydiff:%d,creteria:%d, fit:%d\n",diff, nearlyDiff, creteriaEvaluationPerSlice, unit.getFit(geneEnvironment))
 		if nearlyDiff > diff {
-//			fmt.Printf("updated\n")
+			//			fmt.Printf("updated\n")
 			nearlyFitUnit = unit
 		}
 	}
@@ -269,7 +269,7 @@ func GetMaxFitGene(geneUnits []*GeneUnit, geneEnvironment GeneEnvironment) *Gene
 	return geneMaxFitUnit
 }
 
-func EnemiesWithZone(creteriaEvaluationPerSlice int, zones []JsonZone, questEnvironment QuestEnvironment, geneEnvironment GeneEnvironment) []EnemyAppear {
+func EnemiesWithZone(creteriaEvaluationPerSlice int, zones []JsonZone, questEnvironment QuestEnvironment, geneEnvironment GeneEnvironment, sliceIdx int) []EnemyAppear {
 
 	println("=== creteriaEvaluationPerSlice:", creteriaEvaluationPerSlice)
 
@@ -389,21 +389,71 @@ func EnemiesWithZone(creteriaEvaluationPerSlice int, zones []JsonZone, questEnvi
 		Scan()
 	}
 
-	{
-		//最終世代で最もFitが理想値に近いものを選び、EnemyAppearに変換する
-		maxFitGeneUnit := GetNearlyFitGene(geneUnitsPerAge, creteriaEvaluationPerSlice, geneEnvironment)
-		fmt.Printf("[fit final]%d/%d\n",maxFitGeneUnit.getFit(geneEnvironment), creteriaEvaluationPerSlice)
+	//最終世代で最もFitが理想値に近いものを選び、EnemyAppearに変換する
+	maxFitGeneUnit := GetNearlyFitGene(geneUnitsPerAge, creteriaEvaluationPerSlice, geneEnvironment)
+	fmt.Printf("[fit final]%d/%d\n", maxFitGeneUnit.getFit(geneEnvironment), creteriaEvaluationPerSlice)
 
-		//最終世代で最もFitが高いものを選び、EnemyAppearに変換する
-//		maxFitGeneUnit2 := GetMaxFitGene(geneUnitsPerAge, geneEnvironment)
-//		fmt.Printf("[fit final2]%d\n", maxFitGeneUnit2.getFit(geneEnvironment))
+	fmt.Printf("[]geneUnitsPerAge:%+v\n", geneUnitsPerAge)
+	for _, enemy := range maxFitGeneUnit.GenericUnitEnemies {
+		fmt.Printf("[fit final enemy]%+v\n", enemy)
+	}
 
-		fmt.Printf("[]geneUnitsPerAge:%+v\n", geneUnitsPerAge)
-		for _, enemy := range maxFitGeneUnit.GenericUnitEnemies {
-			fmt.Printf("[fit final enemy]%+v\n", enemy)
+	enemyAppears := []EnemyAppear{}
+	for _, enemy := range maxFitGeneUnit.GenericUnitEnemies {
+		enemyAppear := EnemyAppear{
+			//Id           int
+			//Quest        JsonGameQuestIn
+			Sample       :enemy.createEnemySample(),
+			Zone         :enemy.zone,
+			AIType       :EQPTypeAttacker,
+			AppearTime   :(sliceIdx * geneEnvironment.QuestEnvironment.SecondsPerSlice * 1000) + AdjustAdditionalAppearTime(enemy),
+			//IntervalTime int
+			//Num          int
+		}
+		enemyAppears = append(enemyAppears, enemyAppear)
+	}
+	return enemyAppears
+}
+
+func AdjustAdditionalAppearTime(geneUnitEnemy *GeneUnitEnemy) int {
+	switch geneUnitEnemy.enemy.fixedRole{
+	case RoleTank:
+		return 0
+	case RoleHealer:
+		return 3000
+	case RoleDpsMelee:
+		return 1000
+	case RoleDpsRanged:
+		return 1500
+	case RoleDpsAoe:
+		return 3000
+	case RoleBuff:
+		return 2000
+	case RoleDeBuff:
+		return 2000
+	}
+	return 0
+}
+
+func (geneUnitEnemy *GeneUnitEnemy)createEnemySample() EnemySample {
+	if(geneUnitEnemy.enemy.characterId == CharacterIdShield){
+		return EnemySample{
+			//		Id:
+			CharacterId  : geneUnitEnemy.enemy.characterId,
+			//		UnitLevel    :
+			mainEqp      : geneUnitEnemy.eqp,
+			//		mainEqpLevel int
+			subEqp1      : geneUnitEnemy.eqpSub1,
+			subEqp2      : geneUnitEnemy.eqpSub2,
 		}
 	}
-	return nil
+	return EnemySample{
+		//		Id:
+		CharacterId  : geneUnitEnemy.enemy.characterId,
+		//		UnitLevel    :
+		mainEqp      : geneUnitEnemy.eqp,
+		//		mainEqpLevel int
+	}
 }
 
 func Scan2() {
@@ -537,10 +587,10 @@ type GenericEnemyPT struct {
 func CreateRandomGeneUnit(canCreateMaxNum int, geneEnvironment GeneEnvironment, ptId *int) *GeneUnit {
 	geneUnit := &GeneUnit{}
 	willCreateNum := 0
-	min:=canCreateMaxNum - 2
-	max:=canCreateMaxNum + 2
+	min := canCreateMaxNum - 2
+	max := canCreateMaxNum + 2
 	{
-		if(min < 1){
+		if (min < 1) {
 			min = 1
 		}
 		willCreateNum = lottery.GetRandomInt(min, max)

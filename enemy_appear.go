@@ -204,9 +204,11 @@ enemySamples []EnemySample, zones []JsonZone, questsOut []JsonGameQuestOut) {
 		//このスライスの理想評価値
 		creteriaEvaluationPerSlice := questEnvironment.criteriaEvaluationPerSliceAtIndex(i)
 		fmt.Printf("[%d]%+v\n", i, creteriaEvaluationPerSlice)
-
-		_ = EnemiesWithZone(creteriaEvaluationPerSlice, zones, questEnvironment, geneEnvironment)
+		enemyAppearsPerSlice := EnemiesWithZone(creteriaEvaluationPerSlice, zones, questEnvironment, geneEnvironment, i)
+		enemyAppears = append(enemyAppears, enemyAppearsPerSlice...)
 	}
+
+	//AppearのIdとか足りてないやつをセットする
 
 	//ナップザック結果の結合
 

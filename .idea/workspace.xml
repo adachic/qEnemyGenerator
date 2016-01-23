@@ -4,7 +4,11 @@
     <list default="true" id="064d568c-4cef-4a5f-bee9-2f4c76a9d89b" name="Default" comment="">
       <change type="DELETED" beforePath="$PROJECT_DIR$/debug/.eqp.json.swp" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/debug/.quest.json.swp" afterPath="" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/qEnemyGenerator" afterPath="$PROJECT_DIR$/qEnemyGenerator" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/enemy_appear.go" afterPath="$PROJECT_DIR$/enemy_appear.go" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/main.go" afterPath="$PROJECT_DIR$/main.go" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/napzack_solver.go" afterPath="$PROJECT_DIR$/napzack_solver.go" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="qEnemyGenerator.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -33,17 +37,17 @@
         <entry file="file://$PROJECT_DIR$/game_enemy.go">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="103" column="0" selection-start-line="103" selection-start-column="0" selection-end-line="103" selection-end-column="0" />
+              <caret line="67" column="16" selection-start-line="67" selection-start-column="16" selection-end-line="67" selection-end-column="16" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="napzack_solver.go" pinned="false" current-in-tab="true">
+      <file leaf-file-name="napzack_solver.go" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/napzack_solver.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.56623375">
-              <caret line="548" column="55" selection-start-line="548" selection-start-column="55" selection-end-line="548" selection-end-column="55" />
+            <state vertical-scroll-proportion="0.0">
+              <caret line="271" column="167" selection-start-line="271" selection-start-column="167" selection-end-line="271" selection-end-column="167" />
               <folding>
                 <element signature="e#13#86#0" expanded="true" />
               </folding>
@@ -95,7 +99,7 @@
         <entry file="file://$PROJECT_DIR$/game_quest.go">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="75" column="37" selection-start-line="75" selection-start-column="37" selection-end-line="75" selection-end-column="37" />
+              <caret line="71" column="5" selection-start-line="71" selection-start-column="5" selection-end-line="71" selection-end-column="5" />
               <folding />
             </state>
           </provider>
@@ -105,17 +109,17 @@
         <entry file="file://$PROJECT_DIR$/main.go">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="31" column="52" selection-start-line="31" selection-start-column="52" selection-end-line="31" selection-end-column="52" />
+              <caret line="47" column="52" selection-start-line="47" selection-start-column="52" selection-end-line="47" selection-end-column="52" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="enemy_appear.go" pinned="false" current-in-tab="false">
+      <file leaf-file-name="enemy_appear.go" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/enemy_appear.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="89" column="0" selection-start-line="89" selection-start-column="0" selection-end-line="89" selection-end-column="0" />
+            <state vertical-scroll-proportion="0.74025977">
+              <caret line="207" column="64" selection-start-line="207" selection-start-column="64" selection-end-line="207" selection-end-column="64" />
               <folding />
             </state>
           </provider>
@@ -148,11 +152,11 @@
         <option value="$PROJECT_DIR$/game_quest.go" />
         <option value="$PROJECT_DIR$/debug/napzack_solver.go" />
         <option value="$PROJECT_DIR$/../lottery/lottery_engine.go" />
-        <option value="$PROJECT_DIR$/enemy_appear.go" />
-        <option value="$PROJECT_DIR$/main.go" />
         <option value="$PROJECT_DIR$/game_enemy.go" />
         <option value="$PROJECT_DIR$/game_eqp.go" />
         <option value="$PROJECT_DIR$/napzack_solver.go" />
+        <option value="$PROJECT_DIR$/main.go" />
+        <option value="$PROJECT_DIR$/enemy_appear.go" />
       </list>
     </option>
   </component>
@@ -594,42 +598,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/game_quest.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="75" column="37" selection-start-line="75" selection-start-column="37" selection-end-line="75" selection-end-column="37" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/game_map.go">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="16" column="5" selection-start-line="16" selection-start-column="5" selection-end-line="16" selection-end-column="5" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/enemy_appear.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="89" column="0" selection-start-line="89" selection-start-column="0" selection-end-line="89" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/main.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="31" column="52" selection-start-line="31" selection-start-column="52" selection-end-line="31" selection-end-column="52" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/game_enemy.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="103" column="0" selection-start-line="103" selection-start-column="0" selection-end-line="103" selection-end-column="0" />
           <folding />
         </state>
       </provider>
@@ -650,13 +622,45 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/game_quest.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="71" column="5" selection-start-line="71" selection-start-column="5" selection-end-line="71" selection-end-column="5" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/game_enemy.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="67" column="16" selection-start-line="67" selection-start-column="16" selection-end-line="67" selection-end-column="16" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/main.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="47" column="52" selection-start-line="47" selection-start-column="52" selection-end-line="47" selection-end-column="52" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/napzack_solver.go">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.56623375">
-          <caret line="548" column="55" selection-start-line="548" selection-start-column="55" selection-end-line="548" selection-end-column="55" />
+        <state vertical-scroll-proportion="0.0">
+          <caret line="271" column="167" selection-start-line="271" selection-start-column="167" selection-end-line="271" selection-end-column="167" />
           <folding>
             <element signature="e#13#86#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/enemy_appear.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.74025977">
+          <caret line="207" column="64" selection-start-line="207" selection-start-column="64" selection-end-line="207" selection-end-column="64" />
+          <folding />
         </state>
       </provider>
     </entry>
