@@ -51,7 +51,7 @@ type GeneUnitEnemy struct {
 func (geneUnitEnemy GeneUnitEnemy)getEQPFit() int {
 	fit := 0
 	fit = geneUnitEnemy.eqp.getFit()
-	if(geneUnitEnemy.enemy.characterId == CharacterIdShield){
+	if (geneUnitEnemy.enemy.characterId == CharacterIdShield) {
 		fit += geneUnitEnemy.eqpSub1.getFit()
 		fit += geneUnitEnemy.eqpSub2.getFit()
 	}
@@ -59,9 +59,9 @@ func (geneUnitEnemy GeneUnitEnemy)getEQPFit() int {
 }
 
 //ランダムな装備を身に付ける
-func (geneUnitEnemy *GeneUnitEnemy)attachEQPs(){
+func (geneUnitEnemy *GeneUnitEnemy)attachEQPs() {
 	geneUnitEnemy.eqp = PickUpEQPWithSampleMainEnemy(geneUnitEnemy.enemy)
-	if(geneUnitEnemy.enemy.characterId == CharacterIdShield){
+	if (geneUnitEnemy.enemy.characterId == CharacterIdShield) {
 		//とりあえずはプレートメイル兵のみ防具をつける
 		geneUnitEnemy.eqpSub1 = PickUpRandomShield(geneUnitEnemy.enemy)
 		geneUnitEnemy.eqpSub2 = PickUpRandomBody(geneUnitEnemy.enemy)
@@ -79,7 +79,7 @@ func (geneUnitEnemy GeneUnitEnemy)dumpFit(geneEnvironment GeneEnvironment) {
 	fit2 := geneUnitEnemy.zone.getFit(geneUnitEnemy.enemy.fixedRole, geneEnvironment)
 	fit3 := geneUnitEnemy.getEQPFit()
 	fmt.Printf("[(%d):%d/%d/%d]", fit1 + fit2 + fit3, fit1, fit2, fit3)
-//	fmt.Printf("%+v", geneUnitEnemy)
+	//	fmt.Printf("%+v", geneUnitEnemy)
 }
 
 
@@ -236,11 +236,33 @@ func (geneunit *GeneUnit)MutateSuddenly(geneEnvironment GeneEnvironment) {
 	}
 }
 
+//最も近い最適度を返す
+func GetNearlyFitGene(geneUnits []*GeneUnit, creteriaEvaluationPerSlice int, geneEnvironment GeneEnvironment) *GeneUnit {
+	nearlyFitUnit := &GeneUnit{Fit:0}
+
+	for _, unit := range geneUnits {
+		diff := creteriaEvaluationPerSlice - unit.getFit(geneEnvironment)
+		if (diff < 0) {
+			diff = -diff
+		}
+		nearlyDiff := creteriaEvaluationPerSlice - nearlyFitUnit.getFit(geneEnvironment)
+		if (nearlyDiff < 0) {
+			nearlyDiff = -nearlyDiff
+		}
+//		fmt.Printf("diff:%d, nealydiff:%d,creteria:%d, fit:%d\n",diff, nearlyDiff, creteriaEvaluationPerSlice, unit.getFit(geneEnvironment))
+		if nearlyDiff > diff {
+//			fmt.Printf("updated\n")
+			nearlyFitUnit = unit
+		}
+	}
+	return nearlyFitUnit
+}
+
 //最もFitの高い個を返す
 func GetMaxFitGene(geneUnits []*GeneUnit, geneEnvironment GeneEnvironment) *GeneUnit {
 	geneMaxFitUnit := &GeneUnit{Fit:0}
 	for _, unit := range geneUnits {
-		if geneMaxFitUnit.Fit < unit.getFit(geneEnvironment) {
+		if geneMaxFitUnit.getFit(geneEnvironment) < unit.getFit(geneEnvironment) {
 			geneMaxFitUnit = unit
 		}
 	}
@@ -351,27 +373,36 @@ func EnemiesWithZone(creteriaEvaluationPerSlice int, zones []JsonZone, questEnvi
 				}
 				}
 			}
-			//			fmt.Printf("[%+v]\n->\n[%+v]\n", geneUnitsPerAge, nextGeneUnits)
+			//	fmt.Printf("[%+v]\n->\n[%+v]\n", geneUnitsPerAge, nextGeneUnits)
 		}
 		//次世代が一定になっていれば次世代を対象として世代操作開始に戻る
 		geneUnitsPerAge = nextGeneUnits
 		nextGeneUnits = make([]*GeneUnit, geneEnvironment.GeneNumPerAge)
-		//		fmt.Printf("[next to age:%+v -> %+v\n", geneUnitsPerAge, nextGeneUnits)
 
-		maxFitGeneUnit := GetMaxFitGene(geneUnitsPerAge, geneEnvironment)
-		//		fmt.Printf("maxFitGene:%+v\n", *maxFitGeneUnit)
-		fmt.Printf("[fit age:%d]%d\n", age, maxFitGeneUnit.Fit)
-
+		i := 0
+		for _, geneUnit := range geneUnitsPerAge {
+			fmt.Printf("[fit age:%d](%d)%d\n", age, i, geneUnit.getFit(geneEnvironment))
+			i++
+		}
+		maxFitGeneUnit := GetNearlyFitGene(geneUnitsPerAge, creteriaEvaluationPerSlice, geneEnvironment)
+		fmt.Printf("[fit age:%d]%d\n", age, maxFitGeneUnit.getFit(geneEnvironment))
 		Scan()
 	}
 
-	//最終世代で最もFitが高いものを選び、EnemyAppearに変換する
-	maxFitGeneUnit := GetMaxFitGene(geneUnitsPerAge, geneEnvironment)
-	fmt.Printf("[fit final]%d\n", maxFitGeneUnit.Fit)
-	fmt.Printf("[fit final geneParam]%+v\n", *maxFitGeneUnit)
-	for _, enemy := range maxFitGeneUnit.GenericUnitEnemies {
-		fmt.Printf("[fit final enemy]%+v\n", enemy)
-		//pp.Printf("[fit final enemy]%+v\n", enemy)
+	{
+		//最終世代で最もFitが理想値に近いものを選び、EnemyAppearに変換する
+		maxFitGeneUnit := GetNearlyFitGene(geneUnitsPerAge, creteriaEvaluationPerSlice, geneEnvironment)
+		fmt.Printf("[fit final]%d/%d\n",maxFitGeneUnit.getFit(geneEnvironment), creteriaEvaluationPerSlice)
+
+		//最終世代で最もFitが高いものを選び、EnemyAppearに変換する
+//		maxFitGeneUnit2 := GetMaxFitGene(geneUnitsPerAge, geneEnvironment)
+
+//		fmt.Printf("[fit final2]%d\n", maxFitGeneUnit2.getFit(geneEnvironment))
+
+		fmt.Printf("[]geneUnitsPerAge:%+v\n", geneUnitsPerAge)
+		for _, enemy := range maxFitGeneUnit.GenericUnitEnemies {
+			fmt.Printf("[fit final enemy]%+v\n", enemy)
+		}
 	}
 	return nil
 }
