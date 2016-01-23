@@ -42,9 +42,138 @@ type JsonZone struct {
 	pos6  int `json:"pos6"`
 }
 
-func (zone JsonZone) getFit() int{
-	//TODO 正しくzoneの評価をする
-	return 10
+func (zone JsonZone)getMapPosition() GameMapPosition {
+	pos := zone.pos1
+	return GameMapPosition{
+		X:pos % 100,
+		Y:(pos / 100) % 100,
+		Z:(pos / 10000) % 100,
+	}
+}
+
+//position1,2の単純な引き算した距離を返す
+func (position1 GameMapPosition)distanceAbs(position2 GameMapPosition) int {
+	distanceAbs := 0
+	{
+		xdiff := position2.X - position1.X
+		if (xdiff < 0) {
+			distanceAbs += -xdiff
+		}else {
+			distanceAbs += xdiff
+		}
+	}
+	{
+		ydiff := position2.Y - position1.Y
+		if (ydiff < 0) {
+			distanceAbs += -ydiff
+		}else {
+			distanceAbs += ydiff
+		}
+	}
+	{
+		zdiff := position2.Z - position1.Z
+		if (zdiff < 0) {
+			distanceAbs += -zdiff
+		}else {
+			distanceAbs += zdiff
+		}
+	}
+	return distanceAbs
+}
+
+func (zone JsonZone) getFit(role Role, geneEnvironment GeneEnvironment) int {
+	fit := 0
+	switch role {
+	case RoleTank:
+		fallthrough
+	case RoleDpsMelee:
+//		fmt.Printf("unko1")
+		fit = zone.getFitForMelee(geneEnvironment)
+	case RoleHealer:
+		fallthrough
+	case RoleDpsRanged:
+		fallthrough
+	case RoleDpsAoe:
+		fallthrough
+	case RoleBuff:
+		fallthrough
+	case RoleDeBuff:
+//		fmt.Printf("unko2")
+		fit = zone.getFitForRanged(geneEnvironment)
+	default:
+//		fmt.Printf("unko3")
+	}
+	return fit
+}
+
+func (zone JsonZone) getFitForMelee(geneEnvironment GeneEnvironment) int {
+	fit := 0
+	distanceAbs := geneEnvironment.JsonGameMap.AllyStartPoint.distanceAbs(zone.getMapPosition())
+	switch {
+	case distanceAbs > 20:
+		fit = 1
+	case distanceAbs > 15:
+		fit = 5
+	case distanceAbs > 10:
+		fit = 10
+	case distanceAbs > 5:
+		fit = 15
+	default:
+		fit = 20
+	}
+	return fit
+}
+
+func (zone JsonZone) getFitForRanged(geneEnvironment GeneEnvironment) int {
+	provisionalFitXYZ := 0
+	{
+		distanceAbs := geneEnvironment.JsonGameMap.AllyStartPoint.distanceAbs(zone.getMapPosition())
+		switch {
+		case distanceAbs > 20:
+			provisionalFitXYZ = 1
+		case distanceAbs > 15:
+			provisionalFitXYZ = 2
+		case distanceAbs > 10:
+			provisionalFitXYZ = 3
+		case distanceAbs > 5:
+			provisionalFitXYZ = 5
+		default:
+			provisionalFitXYZ = 10
+		}
+	}
+	provisionalFitZ := 0
+	{
+		zdiff := zone.getMapPosition().Z - geneEnvironment.JsonGameMap.AllyStartPoint.Z
+		switch  {
+		case zdiff > 10:
+			provisionalFitZ =  20
+		case zdiff > 4:
+			provisionalFitZ =  10
+		case zdiff > 1:
+			provisionalFitZ =  5
+		default:
+			provisionalFitZ =  0
+		}
+	}
+	provisionalFit := provisionalFitXYZ + provisionalFitZ
+	fit := 0
+	{
+		switch  {
+		case provisionalFit > 25:
+			fit = 65
+		case provisionalFit > 20:
+			fit = 40
+		case provisionalFit > 15:
+			fit = 25
+		case provisionalFit > 10:
+			fit = 12
+		case provisionalFit > 5:
+			fit = 5
+		default:
+			fit = 1
+		}
+	}
+	return fit
 }
 
 type GameZone struct {
@@ -64,17 +193,19 @@ enemySamples []EnemySample, zones []JsonZone, questsOut []JsonGameQuestOut) {
 	fmt.Println("===zones====")
 	fmt.Printf("%+v\n", zones)
 
+	geneEnvironment := CreateGeneEnvironment(zones, questEnvironment, gameMap);
+
 	//求めたい評価値
 	creteriaEvaluation := questEnvironment.criteriaStateEvaluation()
 	fmt.Printf("creteriaEvaluation %+v\n", creteriaEvaluation)
 
 	//スライス単位でナップザックする
-	for i := 0; i < questEnvironment.timeSliceCount() ; i++ {
+	for i := 0; i < questEnvironment.timeSliceCount(); i++ {
 		//このスライスの理想評価値
 		creteriaEvaluationPerSlice := questEnvironment.criteriaEvaluationPerSliceAtIndex(i)
-		fmt.Printf("[%d]%+v\n",i, creteriaEvaluationPerSlice)
+		fmt.Printf("[%d]%+v\n", i, creteriaEvaluationPerSlice)
 
-		_ = EnemiesWithZone(creteriaEvaluationPerSlice, zones, questEnvironment)
+		_ = EnemiesWithZone(creteriaEvaluationPerSlice, zones, questEnvironment, geneEnvironment)
 	}
 
 	//ナップザック結果の結合
@@ -100,20 +231,20 @@ func CreateZones(questEnvironment QuestEnvironment, gameMap JsonGameMap, gamePar
 		}
 	}
 
-//	fmt.Println("aho1")
+	//	fmt.Println("aho1")
 	//敵地点をゾーンに変換
 	var gameZones []GameZone
 	for _, value := range gameMap.EnemyStartPoints {
 		positions := CreateNearlyGamePositions(value, gameMap, xy)
 		gameZone := NewGameZone(positions)
 		gameZones = append(gameZones, *gameZone)
-//		fmt.Printf("%+v\n", gameZones)
+		//		fmt.Printf("%+v\n", gameZones)
 	}
-//	fmt.Println("aho2")
+	//	fmt.Println("aho2")
 
 	//JSON形式に変換
 	jsonZones = ConvertToJsonZone(gameZones, gameMap.MapId)
-//	fmt.Println("aho3")
+	//	fmt.Println("aho3")
 	return jsonZones
 }
 
@@ -161,7 +292,7 @@ func CreateNearlyGamePositions(position GameMapPosition, gameMap JsonGameMap, xy
 		x := position.X + xOffs[i]
 		y := position.Y + yOffs[i]
 		z := position.Z
-		if(x >= gameMap.MaxX || x < 0 || y >= gameMap.MaxY || y < 0 || z == 0){
+		if (x >= gameMap.MaxX || x < 0 || y >= gameMap.MaxY || y < 0 || z == 0) {
 			continue
 		}
 		//他のゾーンで取られている
@@ -169,7 +300,7 @@ func CreateNearlyGamePositions(position GameMapPosition, gameMap JsonGameMap, xy
 		if (existXY) {
 			continue
 		}
-//		fmt.Print("unko0:",z)
+		//		fmt.Print("unko0:",z)
 		cube := gameMap.JungleGym3[z - 1][y][x]
 		//足元がない
 		if (cube == nil) {
@@ -179,7 +310,7 @@ func CreateNearlyGamePositions(position GameMapPosition, gameMap JsonGameMap, xy
 		if (!cube.Walkable) {
 			continue
 		}
-//		fmt.Print("unko1:",z)
+		//		fmt.Print("unko1:",z)
 		cube2 := gameMap.JungleGym3[z][y][x]
 		//ブロックで埋まっている
 		if (cube2 != nil) {

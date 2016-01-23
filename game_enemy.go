@@ -67,6 +67,7 @@ const (
 //敵情報
 type Enemy struct {
 	characterId CharacterId
+	fixedRole   Role
 	roles       []Role
 
 	fit         int
@@ -292,6 +293,7 @@ func PickUpRandomSampleWithRole(enemiesSample []Enemy, role Role) Enemy {
 		if containedRole {
 			continue
 		}
+		enemy.fixedRole = role
 		filterdEnemy = append(filterdEnemy, enemy)
 	}
 	filterdEnemyNum := len(filterdEnemy)
@@ -301,7 +303,8 @@ func PickUpRandomSampleWithRole(enemiesSample []Enemy, role Role) Enemy {
 
 //Fitを返す
 func (enemy Enemy)getFit() int {
-	//TODO,パラメータのちゃんとした値の算出
+	return enemy.enemyJson.Sum
+
 	switch enemy.characterId {
 	case CharacterIdSword :
 	case CharacterIdArcher:

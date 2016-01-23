@@ -12,6 +12,7 @@ type GeneEnvironment struct {
 	Insections       int //交差点数
 	Zones            []JsonZone
 	QuestEnvironment QuestEnvironment
+	JsonGameMap      JsonGameMap
 	EnemySamples     []Enemy
 }
 
@@ -44,16 +45,24 @@ type GeneUnitEnemy struct {
 }
 
 //Fitを返す
-func (geneUnit *GeneUnit)getFit() int {
-	geneUnit.calcFit()
+func (geneUnit *GeneUnit)getFit(geneEnvironment GeneEnvironment) int {
+	geneUnit.calcFit(geneEnvironment)
 	return geneUnit.Fit
 }
 
+func (geneUnitEnemy GeneUnitEnemy)dumpFit(geneEnvironment GeneEnvironment) {
+	fit1 := geneUnitEnemy.enemy.getFit()
+	fit2 := geneUnitEnemy.zone.getFit(geneUnitEnemy.enemy.fixedRole, geneEnvironment)
+	fit3 := geneUnitEnemy.eqp.getFit()
+	fmt.Printf("[(%d):%d/%d/%d]", fit1+fit2+fit3,fit1,fit2,fit3)
+}
+
+
 //Fitを返す
-func (geneUnitEnemy GeneUnitEnemy)getFit() int {
+func (geneUnitEnemy GeneUnitEnemy)getFit(geneEnvironment GeneEnvironment) int {
 	fit := 0
 	fit += geneUnitEnemy.enemy.getFit()
-	fit += geneUnitEnemy.zone.getFit()
+	fit += geneUnitEnemy.zone.getFit(geneUnitEnemy.enemy.fixedRole, geneEnvironment)
 	fit += geneUnitEnemy.eqp.getFit()
 	return fit
 }
@@ -203,19 +212,17 @@ func (geneunit *GeneUnit)MutateSuddenly(geneEnvironment GeneEnvironment) {
 }
 
 //最もFitの高い個を返す
-func GetMaxFitGene(geneUnits []*GeneUnit) *GeneUnit {
+func GetMaxFitGene(geneUnits []*GeneUnit,geneEnvironment GeneEnvironment) *GeneUnit {
 	geneMaxFitUnit := &GeneUnit{Fit:0}
 	for _, unit := range geneUnits {
-		if geneMaxFitUnit.Fit < unit.getFit() {
+		if geneMaxFitUnit.Fit < unit.getFit(geneEnvironment) {
 			geneMaxFitUnit = unit
 		}
 	}
 	return geneMaxFitUnit
 }
 
-func EnemiesWithZone(creteriaEvaluationPerSlice int, zones []JsonZone, questEnvironment QuestEnvironment) []EnemyAppear {
-	geneEnvironment := CreateGeneEnvironment(zones, questEnvironment);
-
+func EnemiesWithZone(creteriaEvaluationPerSlice int, zones []JsonZone, questEnvironment QuestEnvironment, geneEnvironment GeneEnvironment) []EnemyAppear {
 
 	println("=== creteriaEvaluationPerSlice:", creteriaEvaluationPerSlice)
 
@@ -326,7 +333,7 @@ func EnemiesWithZone(creteriaEvaluationPerSlice int, zones []JsonZone, questEnvi
 		nextGeneUnits = make([]*GeneUnit, geneEnvironment.GeneNumPerAge)
 		//		fmt.Printf("[next to age:%+v -> %+v\n", geneUnitsPerAge, nextGeneUnits)
 
-		maxFitGeneUnit := GetMaxFitGene(geneUnitsPerAge)
+		maxFitGeneUnit := GetMaxFitGene(geneUnitsPerAge, geneEnvironment)
 		//		fmt.Printf("maxFitGene:%+v\n", *maxFitGeneUnit)
 		fmt.Printf("[fit age:%d]%d\n", age, maxFitGeneUnit.Fit)
 
@@ -334,7 +341,7 @@ func EnemiesWithZone(creteriaEvaluationPerSlice int, zones []JsonZone, questEnvi
 	}
 
 	//最終世代で最もFitが高いものを選び、EnemyAppearに変換する
-	maxFitGeneUnit := GetMaxFitGene(geneUnitsPerAge)
+	maxFitGeneUnit := GetMaxFitGene(geneUnitsPerAge, geneEnvironment)
 	fmt.Printf("[fit final]%d\n", maxFitGeneUnit.Fit)
 	fmt.Printf("[fit final geneParam]%+v\n", *maxFitGeneUnit)
 	for _, enemy := range maxFitGeneUnit.GenericUnitEnemies {
@@ -506,17 +513,27 @@ func CreateRandomGeneUnit(canCreateMaxNum int, geneEnvironment GeneEnvironment, 
 	*ptId++
 
 	geneUnit.GenericUnitEnemies = geneUnitEnemies
-	fmt.Printf("unko:geneUnitEnemies:%+v\n", geneUnitEnemies)
+	geneUnit.calcFit(geneEnvironment)
+	fmt.Printf("unko:geneUnitEnemies:%+v fit(%d) ", geneUnitEnemies, geneUnit.Fit)
 
-	geneUnit.calcFit()
+	geneUnit.dumpEnemyFit(geneEnvironment)
+	fmt.Printf("\n")
+
 	return geneUnit
 }
 
+
+func (geneUnit *GeneUnit) dumpEnemyFit(geneEnvironment GeneEnvironment) {
+	for _, enemy := range geneUnit.GenericUnitEnemies {
+		enemy.dumpFit(geneEnvironment)
+	}
+}
+
 //Fitの算出
-func (geneUnit *GeneUnit) calcFit() {
+func (geneUnit *GeneUnit) calcFit(geneEnvironment GeneEnvironment) {
 	fit := 0
 	for _, enemy := range geneUnit.GenericUnitEnemies {
-		fit += enemy.getFit()
+		fit += enemy.getFit(geneEnvironment)
 	}
 	geneUnit.Fit = fit
 }
@@ -527,29 +544,28 @@ func CreateRundomsWithGeneUnitsPerAge(creteriaEvaluationPerSlice int, geneEnviro
 
 	numPerAge := creteriaEvaluationPerSlice / geneEnvironment.QuestEnvironment.PointPerOne
 	ptId := 0
-	for i := 0; i < geneEnvironment.GeneNumPerAge ; i++ {
+	for i := 0; i < geneEnvironment.GeneNumPerAge; i++ {
 		geneUnit := CreateRandomGeneUnit(numPerAge, geneEnvironment, &ptId)
 		geneUnitsPerAge = append(geneUnitsPerAge, geneUnit)
-		fmt.Printf("%d:geneUnitsPerAge:%+v\n",i, geneUnitsPerAge)
 	}
-	fmt.Printf("geneUnitsPerAge:%+v\n", geneUnitsPerAge)
+	fmt.Printf("[]geneUnitsPerAge:%+v\n", geneUnitsPerAge)
 
 	return geneUnitsPerAge
 }
 
 //アルゴリズムで使う変数を一括で作る
-func CreateGeneEnvironment(zones []JsonZone, questEnvironment QuestEnvironment) GeneEnvironment {
+func CreateGeneEnvironment(zones []JsonZone, questEnvironment QuestEnvironment, gameMap JsonGameMap) GeneEnvironment {
 	//	dst := [len(zones)]JsonZone{}
 	dst := make([]JsonZone, len(zones))
-
 	copy(dst, zones)
 	return GeneEnvironment{
 		GeneNumPerAge: 10,
 		Zones: dst,
-		QuestEnvironment: questEnvironment,
 		EnemySamples: CreateEnemySamples(),
 		Ages: 10,
 		Insections: 2,
+		QuestEnvironment: questEnvironment,
+		JsonGameMap:gameMap,
 	}
 }
 
