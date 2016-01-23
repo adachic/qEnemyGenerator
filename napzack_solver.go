@@ -420,7 +420,7 @@ func CreateRundomEnemyIndv(geneEnvironment GeneEnvironment, ptId int) *GeneUnitE
 //突然変異
 func (geneUnitEnemy *GeneUnitEnemy)mutate(geneEnvironment GeneEnvironment) {
 	geneUnitEnemy = CreateRundomEnemyWithType(geneEnvironment,
-		geneUnitEnemy.enemy.role,
+		geneUnitEnemy.enemy.pickUpRandomRole(),
 		geneUnitEnemy.zone,
 		geneUnitEnemy.ptId,
 		geneUnitEnemy.ptCount,

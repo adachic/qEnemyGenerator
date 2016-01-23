@@ -279,13 +279,18 @@ func PickUpRandomSampleWithRole(enemiesSample []Enemy, role Role) Enemy {
 	filterdEnemy := []Enemy{}
 	for i := 0; i < len(enemiesSample); i++ {
 		enemy := enemiesSample[i]
-		if enemy.roles != role {
+
+		containedRole := false
+		for _, role_ := range enemy.roles {
+			if role_ == role{
+				containedRole = true
+			}
+		}
+		if containedRole {
 			continue
 		}
-		//TODO ここきてない
 		filterdEnemy = append(filterdEnemy, enemy)
 	}
-
 	filterdEnemyNum := len(filterdEnemy)
 	idx := lottery.GetRandomInt(0, filterdEnemyNum)
 	return filterdEnemy[idx]
@@ -337,3 +342,11 @@ func (enemy Enemy)getFit() int {
 	}
 	return 30
 }
+
+//所持しているRoleをランダムに選択
+func (enemy Enemy) pickUpRandomRole() Role{
+	rolesCount := len(enemy.roles)
+	idx := lottery.GetRandomInt(0, rolesCount)
+	return enemy.roles[idx]
+}
+
