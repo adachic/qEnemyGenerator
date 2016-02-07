@@ -439,6 +439,7 @@ func (geneUnitEnemy *GeneUnitEnemy)createEnemySample() *EnemySample {
 		return &EnemySample{
 			//		Id:
 			CharacterId  : geneUnitEnemy.enemy.characterId,
+			CharacterIdStr: geneUnitEnemy.enemy.characterIdStr,
 			//		UnitLevel    :
 			MainEqp      : geneUnitEnemy.eqp,
 			//		mainEqpLevel int
@@ -449,6 +450,7 @@ func (geneUnitEnemy *GeneUnitEnemy)createEnemySample() *EnemySample {
 	return &EnemySample{
 		//		Id:
 		CharacterId  : geneUnitEnemy.enemy.characterId,
+		CharacterIdStr: geneUnitEnemy.enemy.characterIdStr,
 		//		UnitLevel    :
 		MainEqp      : geneUnitEnemy.eqp,
 		//		mainEqpLevel int
@@ -468,7 +470,9 @@ func Scan() {
 //ランダムなZoneを返す
 func (geneEnvironment GeneEnvironment) choiceRandomZone() JsonZone {
 	zoneNum := len(geneEnvironment.Zones)
+
 	idx := lottery.GetRandomInt(0, zoneNum - 1)
+//	fmt.Printf("\n%+v,zonenum:%d",geneEnvironment,zoneNum)
 	return geneEnvironment.Zones[idx]
 }
 

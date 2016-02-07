@@ -65,15 +65,16 @@ const (
 
 //敵情報
 type Enemy struct {
-	characterId CharacterId
-	fixedRole   Role
-	roles       []Role
+	characterId    CharacterId
+	characterIdStr string
+	fixedRole      Role
+	roles          []Role
 
-	fit         int
-	enemyJson   EnemyJson
+	fit            int
+	enemyJson      EnemyJson
 }
 
-func (enemy Enemy)isMonster() bool{
+func (enemy Enemy)isMonster() bool {
 	return enemy.characterId >= CharacterIdSlimeB
 }
 
@@ -153,7 +154,7 @@ func CreateEnemySamplesJ(filePath string) map[string]EnemyJson {
 
 	json_err := json.Unmarshal(file, &jsonGameEnemies)
 	if json_err != nil {
-		fmt.Println("Format Error: ", json_err)
+		fmt.Println("Format Error100: ", json_err)
 	}
 
 	pp.Printf("%+v\n", jsonGameEnemies)
@@ -253,6 +254,7 @@ func CreateEnemy(key string, enemyJson EnemyJson) Enemy {
 
 	return Enemy{
 		characterId:characterId,
+		characterIdStr:key,
 		roles:enemyJson.getRoles(),
 		fit:enemyJson.getFit(),
 		enemyJson:enemyJson,
@@ -264,7 +266,7 @@ func CreateEnemySamples() []Enemy {
 	enemies := []Enemy{}
 	enemyMap := CreateEnemySamplesJ("./debug/character.json")
 	for key, enemy := range enemyMap {
-		if len(enemy.getRoles()) == 0{
+		if len(enemy.getRoles()) == 0 {
 			continue
 		}
 		enemies = append(enemies, CreateEnemy(key, enemy))
@@ -280,7 +282,7 @@ func PickUpRandomSampleWithRole(enemiesSample []Enemy, role Role) Enemy {
 
 		containedRole := false
 		for _, role_ := range enemy.roles {
-			if role_ == role{
+			if role_ == role {
 				containedRole = true
 			}
 		}
@@ -301,7 +303,7 @@ func (enemy Enemy)getFit() int {
 }
 
 //所持しているRoleをランダムに選択
-func (enemy Enemy) pickUpRandomRole() Role{
+func (enemy Enemy) pickUpRandomRole() Role {
 	rolesCount := len(enemy.roles)
 	if rolesCount == 1 {
 		return enemy.roles[0]

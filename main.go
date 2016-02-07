@@ -37,7 +37,7 @@ func main() {
 	fmt.Println("==eqp=")
 	eqps := CreateGameEqps(eqpFilePath)
 	fmt.Println("==characters=")
-	CreateEnemySamplesJ(enemyFilePath)
+//	CreateEnemySamplesJ(enemyFilePath)
 
 	currentQuest := quests[strconv.Itoa(questId)]
 	//出現難度配分
@@ -55,37 +55,34 @@ func main() {
 	fmt.Printf("Hello, world4.\n")
 }
 
+type JsonStub struct{
+	EnemyAppears []*EnemyAppear
+	Zones []JsonZone
+}
+
 //Json/CSV出力
 func CreateJsonAndCsv(enemyAppears []*EnemyAppear, zones []JsonZone) {
-	fmt.Printf("==output json==\n")
+	{
+		fmt.Printf("==output json==\n")
 
-	/*
-	jsonStub := JsonGameMap{
-		MaxX:game_map.Size.MaxX,
-		MaxY:game_map.Size.MaxY,
-		MaxZ:game_map.Size.MaxZ,
-		AspectX:32,
-		AspectY:16,
-		AspectT:16,
-		AllyStartPoint:game_map.AllyStartPoint,
-		EnemyStartPoints:game_map.EnemyStartPoints,
-		Category:game_map.Category,
+		jsonStub := JsonStub{
+			EnemyAppears:enemyAppears,
+			Zones:zones,
+		}
+
+		bytes, json_err := json.Marshal(jsonStub)
+		if json_err != nil {
+			fmt.Println("Json Encode Error: ", json_err)
+		}
+
+		//	fmt.Printf("bytes:%+v\n", string(bytes))
+
+		file, err := os.Create("./output/" + "" + "1.json")
+		_, err = file.Write(bytes)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		defer file.Close()
 	}
-	*/
-	//	fmt.Printf("%+v\n", jsonStub)
-
-	bytes, json_err := json.Marshal(enemyAppears)
-	if json_err != nil {
-		fmt.Println("Json Encode Error: ", json_err)
-	}
-
-	//	fmt.Printf("bytes:%+v\n", string(bytes))
-
-	file, err := os.Create("./output/" + "" + "1.json")
-	_, err = file.Write(bytes)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	defer file.Close()
 }

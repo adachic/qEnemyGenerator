@@ -24,6 +24,7 @@ type EnemyAppear struct {
 type EnemySample struct {
 	Id           int
 	CharacterId  CharacterId
+	CharacterIdStr string
 	UnitLevel    int
 	MainEqp JsonGameEqp
 	MainEqpLevel int
@@ -35,16 +36,16 @@ type EnemySample struct {
 type JsonZone struct {
 	Id    int `json:"zoneId"`
 	MapId int `json:"mapid"`
-	pos1  int `json:"pos1"`
-	pos2  int `json:"pos2"`
-	pos3  int `json:"pos3"`
-	pos4  int `json:"pos4"`
-	pos5  int `json:"pos5"`
-	pos6  int `json:"pos6"`
+	Pos1 int `json:"pos1"`
+	Pos2 int `json:"pos2"`
+	Pos3 int `json:"pos3"`
+	Pos4 int `json:"pos4"`
+	Pos5 int `json:"pos5"`
+	Pos6 int `json:"pos6"`
 }
 
 func (zone JsonZone)getMapPosition() GameMapPosition {
-	pos := zone.pos1
+	pos := zone.Pos1
 	return GameMapPosition{
 		X:pos % 100,
 		Y:(pos / 100) % 100,
@@ -239,20 +240,24 @@ func CreateZones(questEnvironment QuestEnvironment, gameMap JsonGameMap, gamePar
 		}
 	}
 
-	//	fmt.Println("aho1")
+	fmt.Println("aho1:gamemap:%+v\n",gameMap.EnemyStartPoints)
+	fmt.Println("aho1:gamemap:%+v\n",gameMap.AllyStartPoint)
+
 	//敵地点をゾーンに変換
 	var gameZones []GameZone
 	for _, value := range gameMap.EnemyStartPoints {
 		positions := CreateNearlyGamePositions(value, gameMap, xy)
 		gameZone := NewGameZone(positions)
 		gameZones = append(gameZones, *gameZone)
-		//		fmt.Printf("%+v\n", gameZones)
+		fmt.Printf("zone0]%+v\n", gameZones)
+		fmt.Printf("zone1]%+v\n", positions)
+		fmt.Printf("zone2]%+v\n", value)
 	}
-	//	fmt.Println("aho2")
+		fmt.Println("aho2")
 
 	//JSON形式に変換
 	jsonZones = ConvertToJsonZone(gameZones, gameMap.MapId)
-	//	fmt.Println("aho3")
+		fmt.Println("aho3")
 	return jsonZones
 }
 
@@ -269,17 +274,17 @@ func ConvertToJsonZone(gameZones []GameZone, mapId int) (jsonZones []JsonZone) {
 			pos := position.Z * 10000 + position.Y * 100 + position.X
 			switch try {
 			case 1:
-				jsonZone.pos1 = pos
+				jsonZone.Pos1 = pos
 			case 2:
-				jsonZone.pos2 = pos
+				jsonZone.Pos2 = pos
 			case 3:
-				jsonZone.pos3 = pos
+				jsonZone.Pos3 = pos
 			case 4:
-				jsonZone.pos4 = pos
+				jsonZone.Pos4 = pos
 			case 5:
-				jsonZone.pos5 = pos
+				jsonZone.Pos5 = pos
 			case 6:
-				jsonZone.pos6 = pos
+				jsonZone.Pos6 = pos
 			}
 			try++
 			jsonZones = append(jsonZones, jsonZone)
@@ -308,7 +313,7 @@ func CreateNearlyGamePositions(position GameMapPosition, gameMap JsonGameMap, xy
 		if (existXY) {
 			continue
 		}
-		//		fmt.Print("unko0:",z)
+		fmt.Print("unko0:",z)
 		cube := gameMap.JungleGym3[z - 1][y][x]
 		//足元がない
 		if (cube == nil) {
@@ -318,7 +323,7 @@ func CreateNearlyGamePositions(position GameMapPosition, gameMap JsonGameMap, xy
 		if (!cube.Walkable) {
 			continue
 		}
-		//		fmt.Print("unko1:",z)
+				fmt.Print("unko1:",z)
 		cube2 := gameMap.JungleGym3[z][y][x]
 		//ブロックで埋まっている
 		if (cube2 != nil) {
@@ -341,3 +346,4 @@ func NewGameZone(gameMapPositions []GameMapPosition) *GameZone {
 	}
 	return game_zone
 }
+
