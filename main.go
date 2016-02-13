@@ -9,6 +9,8 @@ import (
 )
 
 
+var g_questId int
+
 func main() {
 	fmt.Printf("Hello, world3.\n")
 
@@ -26,6 +28,7 @@ func main() {
 	flag.StringVar(&enemyFilePath, "character", "character.json", "APP_PARTS_FILE_PATH")
 	flag.IntVar(&questId, "questId", 0, "APP_PARTS_FILE_PATH")
 	flag.Parse()
+	g_questId = questId
 
 	//敵出現位置取得
 	//questId取得
@@ -77,7 +80,7 @@ func CreateJsonAndCsv(enemyAppears []*EnemyAppear, zones []JsonZone) {
 
 		//	fmt.Printf("bytes:%+v\n", string(bytes))
 
-		file, err := os.Create("./output/" + "" + "1.json")
+		file, err := os.Create("./output/" + strconv.Itoa(g_questId) + ".enemy.json")
 		_, err = file.Write(bytes)
 		if err != nil {
 			fmt.Println(err)

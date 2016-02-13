@@ -1,12 +1,8 @@
 #!/bin/sh
-QUEST_ID=$1
-
-if [ $QUEST_ID = '' ] ; then
-        exit
-fi
+QUEST_ID=1
 
 go build && ./qEnemyGenerator \
-        -map map/$QUEST_ID.map.json \
+        -map map/5cd86000-4926-4cdb-a6b0-c0f9a6628383.json \
         -quest debug/quest.json \
         -eqp debug/eqp.json \
         -character debug/character.json \
