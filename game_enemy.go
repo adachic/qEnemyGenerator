@@ -2,9 +2,9 @@ package main
 import (
 	"github.com/adachic/lottery"
 	"io/ioutil"
-	"fmt"
+//	"fmt"
 	"encoding/json"
-	"gopkg.in/go-pp/pp.v2"
+//	"gopkg.in/go-pp/pp.v2"
 )
 
 type Role int
@@ -149,15 +149,15 @@ func CreateEnemySamplesJ(filePath string) map[string]EnemyJson {
 
 	file, err := ioutil.ReadFile(filePath)
 	if err != nil {
-		fmt.Println("Read Error: ", err)
+		Dlogln("Read Error: ", err)
 	}
 
 	json_err := json.Unmarshal(file, &jsonGameEnemies)
 	if json_err != nil {
-		fmt.Println("Format Error100: ", json_err)
+		Dlogln("Format Error100: ", json_err)
 	}
 
-	pp.Printf("%+v\n", jsonGameEnemies)
+	//pp.Printf("%+v\n", jsonGameEnemies)
 
 	Scan()
 

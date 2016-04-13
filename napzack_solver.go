@@ -78,7 +78,7 @@ func (geneUnitEnemy GeneUnitEnemy)dumpFit(geneEnvironment GeneEnvironment) {
 	fit1 := geneUnitEnemy.enemy.getFit()
 	fit2 := geneUnitEnemy.zone.getFit(geneUnitEnemy.enemy.fixedRole, geneEnvironment)
 	fit3 := geneUnitEnemy.getEQPFit()
-	fmt.Printf("[(%d):%d/%d/%d]", fit1 + fit2 + fit3, fit1, fit2, fit3)
+	DDlog("[(%d):%d/%d/%d]", fit1 + fit2 + fit3, fit1, fit2, fit3)
 	//	fmt.Printf("%+v", geneUnitEnemy)
 }
 
@@ -110,7 +110,7 @@ func (geneUnit *GeneUnit)IntersectGeneUnitWith(other *GeneUnit, geneEnvironment 
 	//n個のPTか、Indvを交差
 	for i := 0; i < geneEnvironment.Insections; i++ {
 		//まずランダムに選択
-		fmt.Printf("///%+v\n", *geneUnit)
+		DDlog("///%+v\n", *geneUnit)
 		pickupedEnemiesA := geneUnit.pickupedEnemies()
 
 		if (len(tradedPickupedPtIds) > 0&&
@@ -134,7 +134,7 @@ func (geneUnit *GeneUnit)IntersectGeneUnitWith(other *GeneUnit, geneEnvironment 
 		//トレードしたPtIdを保存
 		tradedPickupedPtIds = append(tradedPickupedPtIds, pickupedEnemiesA[0].ptId)
 
-		fmt.Println("[TRADE]tradeDone.")
+		DDlog("[TRADE]tradeDone.")
 		err = false
 	}
 	return err
@@ -145,8 +145,8 @@ func Trade(geneUnitEnemiesA []*GeneUnitEnemy, geneUnitEnemiesB []*GeneUnitEnemy)
 	//	tmp := make([]*GeneUnitEnemy, len(geneUnitEnemiesA))
 	tmp := []*GeneUnitEnemy{}
 
-	fmt.Printf("[TRADE]A:%+v\n", geneUnitEnemiesA)
-	fmt.Printf("[TRADE]B:%+v\n", geneUnitEnemiesB)
+	DDlog("[TRADE]A:%+v\n", geneUnitEnemiesA)
+	DDlog("[TRADE]B:%+v\n", geneUnitEnemiesB)
 	//B->tmp
 	for _, enemyB := range geneUnitEnemiesB {
 		tmp = append(tmp, enemyB)
@@ -197,11 +197,11 @@ func (geneunit *GeneUnit)pickupedEnemiesWithNum(numForIntersection int) (geneUni
 			}
 		}
 		if (restNeedCount != 0) {
-			fmt.Printf("gunu:%d\n", restNeedCount)
+			DDlog("gunu:%d\n", restNeedCount)
 			return nil, true
 		}
 	}else {
-		fmt.Printf("candidatePtIds:%+v,numForIntersection:%+v\n", candidatePtIds, numForIntersection)
+		DDlog("candidatePtIds:%+v,numForIntersection:%+v\n", candidatePtIds, numForIntersection)
 		idx := 0
 		if (len(candidatePtIds) >= 2) {
 			idx = lottery.GetRandomInt(0, len(candidatePtIds) - 1)
@@ -230,7 +230,7 @@ func (geneunit *GeneUnit)pickupedEnemies() (geneUnitEnemies []*GeneUnitEnemy) {
 //突然変異
 func (geneunit *GeneUnit)MutateSuddenly(geneEnvironment GeneEnvironment) {
 	pickedUpEnemies := geneunit.pickupedEnemies()
-	fmt.Printf("[MUTATE]ptId:%+v, ptCount:%+v\n", pickedUpEnemies[0].ptId, pickedUpEnemies[0].ptCount)
+	DDlog("[MUTATE]ptId:%+v, ptCount:%+v\n", pickedUpEnemies[0].ptId, pickedUpEnemies[0].ptCount)
 	for _, enemy := range pickedUpEnemies {
 		enemy.mutate(geneEnvironment)
 	}
@@ -327,7 +327,7 @@ questEnvironment QuestEnvironment, geneEnvironment GeneEnvironment, sliceIdx int
 							break
 						}
 					}
-					fmt.Printf("[COPY]idxPerAge:%+v\n", idx)
+					DDlog("[COPY]idxPerAge:%+v\n", idx)
 					nextGeneUnits[i] = geneUnitsPerAge[idx].copy()
 					geneUnitsPerAge[idx] = nil
 				}
@@ -356,13 +356,13 @@ questEnvironment QuestEnvironment, geneEnvironment GeneEnvironment, sliceIdx int
 								break
 							}
 						}
-						fmt.Printf("[TRADE]startTrade:\n")
+						DDlog("[TRADE]startTrade:\n")
 						err := src1.IntersectGeneUnitWith(src2, geneEnvironment)
 						if (err) {
-							fmt.Printf("[TRADE]trade failed.....:\n")
+							DDlog("[TRADE]trade failed.....:\n")
 							goto relottery
 						}
-						fmt.Printf("[TRADE]trade completed!!!:\n")
+						DDlog("[TRADE]trade completed!!!:\n")
 						nextGeneUnits[i] = src1.copy()
 						nextGeneUnits[i + 1] = src2.copy()
 						//						fmt.Printf("s1:%+v s2:%+v\n", *src1, *src2)
@@ -382,21 +382,21 @@ questEnvironment QuestEnvironment, geneEnvironment GeneEnvironment, sliceIdx int
 
 		i := 0
 		for _, geneUnit := range geneUnitsPerAge {
-			fmt.Printf("[fit age:%d](%d)%d\n", age, i, geneUnit.getFit(geneEnvironment))
+			Dlog("[fit age:%d](%d)%d\n", age, i, geneUnit.getFit(geneEnvironment))
 			i++
 		}
 		maxFitGeneUnit := GetNearlyFitGene(geneUnitsPerAge, creteriaEvaluationPerSlice, geneEnvironment)
-		fmt.Printf("[fit age:%d]%d\n", age, maxFitGeneUnit.getFit(geneEnvironment))
+		Dlog("[fit age:%d]%d\n", age, maxFitGeneUnit.getFit(geneEnvironment))
 		Scan()
 	}
 
 	//最終世代で最もFitが理想値に近いものを選び、EnemyAppearに変換する
 	maxFitGeneUnit := GetNearlyFitGene(geneUnitsPerAge, creteriaEvaluationPerSlice, geneEnvironment)
-	fmt.Printf("[fit final]%d/%d\n", maxFitGeneUnit.getFit(geneEnvironment), creteriaEvaluationPerSlice)
+	Dlog("[fit final]%d/%d\n", maxFitGeneUnit.getFit(geneEnvironment), creteriaEvaluationPerSlice)
 
-	fmt.Printf("[]geneUnitsPerAge:%+v\n", geneUnitsPerAge)
+	Dlog("[]geneUnitsPerAge:%+v\n", geneUnitsPerAge)
 	for _, enemy := range maxFitGeneUnit.GenericUnitEnemies {
-		fmt.Printf("[fit final enemy]%+v\n", enemy)
+		DDlog("[fit final enemy]%+v\n", enemy)
 	}
 
 	enemyAppears := []*EnemyAppear{}
@@ -472,7 +472,7 @@ func (geneEnvironment GeneEnvironment) choiceRandomZone() JsonZone {
 	zoneNum := len(geneEnvironment.Zones)
 
 	idx := lottery.GetRandomInt(0, zoneNum - 1)
-//	fmt.Printf("\n%+v,zonenum:%d",geneEnvironment,zoneNum)
+	Dlog("\n%+v,zonenum:%d",geneEnvironment,zoneNum)
 	return geneEnvironment.Zones[idx]
 }
 
@@ -630,7 +630,7 @@ func CreateRandomGeneUnit(canCreateMaxNum int, geneEnvironment GeneEnvironment, 
 
 	geneUnit.GenericUnitEnemies = geneUnitEnemies
 	geneUnit.calcFit(geneEnvironment)
-	fmt.Printf("[GENE] enemy_num:%d fit(%d) \n", len(geneUnitEnemies), geneUnit.Fit)
+	DDlog("[GENE] enemy_num:%d fit(%d) \n", len(geneUnitEnemies), geneUnit.Fit)
 
 	geneUnit.dumpEnemyFit(geneEnvironment)
 
@@ -664,7 +664,7 @@ func CreateRundomsWithGeneUnitsPerAge(creteriaEvaluationPerSlice int, geneEnviro
 		geneUnit := CreateRandomGeneUnit(numPerAge, geneEnvironment, &ptId)
 		geneUnitsPerAge = append(geneUnitsPerAge, geneUnit)
 	}
-	fmt.Printf("[]geneUnitsPerAge:%+v\n", geneUnitsPerAge)
+	Dlog("[]geneUnitsPerAge:%+v\n", geneUnitsPerAge)
 
 	return geneUnitsPerAge
 }

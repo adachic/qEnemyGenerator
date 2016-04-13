@@ -3,7 +3,7 @@ package main
 import (
 	"io/ioutil"
 	"encoding/json"
-	"fmt"
+//	"fmt"
 )
 
 type JsonGameQuestOut struct {
@@ -52,15 +52,15 @@ func CreateGameQuests(filePath string) map[string]JsonGameQuestIn {
 
 	file, err := ioutil.ReadFile(filePath)
 	if err != nil {
-		fmt.Println("Read Error: ", err)
+		Dlogln("Read Error: ", err)
 	}
 
 	json_err := json.Unmarshal(file, &jsonGameQuests)
 	if json_err != nil {
-		fmt.Println("Format Error: ", json_err)
+		Dlogln("Format Error: ", json_err)
 	}
 
-	fmt.Printf("%+v\n", jsonGameQuests)
+//	fmt.Printf("%+v\n", jsonGameQuests)
 
 	return jsonGameQuests
 }

@@ -3,7 +3,7 @@ package main
 import (
 	"io/ioutil"
 	"encoding/json"
-	"fmt"
+//	"fmt"
 	"github.com/adachic/lottery"
 )
 
@@ -77,17 +77,17 @@ func (eqp JsonGameEqp) getFit() int {
 func CreateGameEqps(filePath string) map[string]JsonGameEqp {
 	file, err := ioutil.ReadFile(filePath)
 	if err != nil {
-		fmt.Println("Read Error: ", err)
+		Dlogln("Read Error: ", err)
 	}
 
 	var jsonGameEqps map[string]JsonGameEqp
 
 	json_err := json.Unmarshal(file, &jsonGameEqps)
 	if json_err != nil {
-		fmt.Println("Format Error: ", json_err)
+		Dlogln("Format Error: ", json_err)
 	}
 
-	fmt.Printf("%+v\n", jsonGameEqps)
+//	Dlog("%+v\n", jsonGameEqps)
 	//Scan2()
 
 	G_jsonGameEqps = jsonGameEqps

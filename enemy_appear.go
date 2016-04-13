@@ -1,7 +1,9 @@
 package main
-import "fmt"
+
+//import "fmt"
 
 type AIType string
+
 const (
 	EQPTypeAttacker AIType = "attacker"
 	EQPTypeDefender AIType = "defender"
@@ -22,26 +24,26 @@ type EnemyAppear struct {
 }
 
 type EnemySample struct {
-	Id           int
-	CharacterId  CharacterId
+	Id             int
+	CharacterId    CharacterId
 	CharacterIdStr string
-	UnitLevel    int
-	MainEqp JsonGameEqp
-	MainEqpLevel int
-	SubEqp1 JsonGameEqp
-	SubEqp2 JsonGameEqp
-	SubEqp3 JsonGameEqp
+	UnitLevel      int
+	MainEqp        JsonGameEqp
+	MainEqpLevel   int
+	SubEqp1        JsonGameEqp
+	SubEqp2        JsonGameEqp
+	SubEqp3        JsonGameEqp
 }
 
 type JsonZone struct {
 	Id    int `json:"zoneId"`
 	MapId int `json:"mapid"`
-	Pos1 int `json:"pos1"`
-	Pos2 int `json:"pos2"`
-	Pos3 int `json:"pos3"`
-	Pos4 int `json:"pos4"`
-	Pos5 int `json:"pos5"`
-	Pos6 int `json:"pos6"`
+	Pos1  int `json:"pos1"`
+	Pos2  int `json:"pos2"`
+	Pos3  int `json:"pos3"`
+	Pos4  int `json:"pos4"`
+	Pos5  int `json:"pos5"`
+	Pos6  int `json:"pos6"`
 }
 
 func (zone JsonZone)getMapPosition() GameMapPosition {
@@ -89,7 +91,6 @@ func (zone JsonZone) getFit(role Role, geneEnvironment GeneEnvironment) int {
 	case RoleTank:
 		fallthrough
 	case RoleDpsMelee:
-//		fmt.Printf("unko1")
 		fit = zone.getFitForMelee(geneEnvironment)
 	case RoleHealer:
 		fallthrough
@@ -100,10 +101,8 @@ func (zone JsonZone) getFit(role Role, geneEnvironment GeneEnvironment) int {
 	case RoleBuff:
 		fallthrough
 	case RoleDeBuff:
-//		fmt.Printf("unko2")
 		fit = zone.getFitForRanged(geneEnvironment)
 	default:
-//		fmt.Printf("unko3")
 	}
 	return fit
 }
@@ -148,13 +147,13 @@ func (zone JsonZone) getFitForRanged(geneEnvironment GeneEnvironment) int {
 		zdiff := zone.getMapPosition().Z - geneEnvironment.JsonGameMap.AllyStartPoint.Z
 		switch  {
 		case zdiff > 10:
-			provisionalFitZ =  20
+			provisionalFitZ = 20
 		case zdiff > 4:
-			provisionalFitZ =  10
+			provisionalFitZ = 10
 		case zdiff > 1:
-			provisionalFitZ =  5
+			provisionalFitZ = 5
 		default:
-			provisionalFitZ =  0
+			provisionalFitZ = 0
 		}
 	}
 	provisionalFit := provisionalFitXYZ + provisionalFitZ
@@ -185,34 +184,34 @@ type GameZone struct {
 //敵出現情報,クエスト情報を返す
 func CreateEnemyAppears(gamePartsDict map[string]GameParts, gameMap JsonGameMap,
 quest JsonGameQuestIn, eqps map[string]JsonGameEqp, questEnvironment QuestEnvironment) (enemyAppears []*EnemyAppear,
- zones []JsonZone) {
+zones []JsonZone) {
 
 	gameMap.allocJungle3(gamePartsDict)
 
 	//地点・ゾーンの確保
 	zones = CreateZones(questEnvironment, gameMap, gamePartsDict)
 
-	fmt.Println("===zones====")
-	fmt.Printf("%+v\n", zones)
+	Dlogln("===zones====")
+	//Dlog("%+v\n", zones)
 
 	geneEnvironment := CreateGeneEnvironment(zones, questEnvironment, gameMap);
 
 	//求めたい評価値
 	creteriaEvaluation := questEnvironment.criteriaStateEvaluation()
-	fmt.Printf("creteriaEvaluation %+v\n", creteriaEvaluation)
+	Dlog("creteriaEvaluation %+v\n", creteriaEvaluation)
 
 	//スライス単位でナップザックする
 	for i := 0; i < questEnvironment.timeSliceCount(); i++ {
 		//このスライスの理想評価値
 		creteriaEvaluationPerSlice := questEnvironment.criteriaEvaluationPerSliceAtIndex(i)
-		fmt.Printf("[%d]%+v\n", i, creteriaEvaluationPerSlice)
+		Dlog("[%d]creteriaEvaluationPerSlice:%+v\n", i, creteriaEvaluationPerSlice)
 		enemyAppearsPerSlice := EnemiesWithZone(creteriaEvaluationPerSlice, zones, questEnvironment, geneEnvironment, i)
 		enemyAppears = append(enemyAppears, enemyAppearsPerSlice...)
 	}
 
 	//AppearのIdとか足りてないやつをセットする
 	id := 1
-	for _, enemyAppear := range enemyAppears{
+	for _, enemyAppear := range enemyAppears {
 		enemyAppear.Id = id
 		enemyAppear.QuestId = quest.Id
 		enemyAppear.Sample.UnitLevel = quest.Difficult
@@ -240,8 +239,8 @@ func CreateZones(questEnvironment QuestEnvironment, gameMap JsonGameMap, gamePar
 		}
 	}
 
-	fmt.Println("aho1:gamemap:%+v\n",gameMap.EnemyStartPoints)
-	fmt.Println("aho1:gamemap:%+v\n",gameMap.AllyStartPoint)
+	Dlog("aho1:gamemap:%+v\n", gameMap.EnemyStartPoints)
+	Dlog("aho1:gamemap:%+v\n", gameMap.AllyStartPoint)
 
 	//敵地点をゾーンに変換
 	var gameZones []GameZone
@@ -249,15 +248,15 @@ func CreateZones(questEnvironment QuestEnvironment, gameMap JsonGameMap, gamePar
 		positions := CreateNearlyGamePositions(value, gameMap, xy)
 		gameZone := NewGameZone(positions)
 		gameZones = append(gameZones, *gameZone)
-		fmt.Printf("zone0]%+v\n", gameZones)
-		fmt.Printf("zone1]%+v\n", positions)
-		fmt.Printf("zone2]%+v\n", value)
+		DDlog("zone0]%+v\n", gameZones)
+		DDlog("zone1]%+v\n", positions)
+		DDlog("zone2]%+v\n", value)
 	}
-		fmt.Println("aho2")
+	DDlogln("aho2")
 
 	//JSON形式に変換
 	jsonZones = ConvertToJsonZone(gameZones, gameMap.MapId)
-		fmt.Println("aho3")
+	DDlogln("aho3")
 	return jsonZones
 }
 
@@ -313,7 +312,7 @@ func CreateNearlyGamePositions(position GameMapPosition, gameMap JsonGameMap, xy
 		if (existXY) {
 			continue
 		}
-		fmt.Print("unko0:",z)
+		DDlogln("unko0:", z)
 		cube := gameMap.JungleGym3[z - 1][y][x]
 		//足元がない
 		if (cube == nil) {
@@ -323,7 +322,7 @@ func CreateNearlyGamePositions(position GameMapPosition, gameMap JsonGameMap, xy
 		if (!cube.Walkable) {
 			continue
 		}
-				fmt.Print("unko1:",z)
+		DDlogln("unko1:", z)
 		cube2 := gameMap.JungleGym3[z][y][x]
 		//ブロックで埋まっている
 		if (cube2 != nil) {

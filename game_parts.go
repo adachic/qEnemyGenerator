@@ -1,7 +1,7 @@
 package main
 import (
 	"io/ioutil"
-	"fmt"
+//	"fmt"
 	"encoding/json"
 )
 
@@ -90,12 +90,14 @@ func CreateGamePartsDict(filePath string) map[string]GameParts {
 
 	json_err := json.Unmarshal(file, &partsDict)
 	if err != nil {
-		fmt.Println("Format Error: ", json_err)
+		Dlogln("Format Error: ", json_err)
 	}
 
+	/*
 	fmt.Printf("%+v\n", partsDict)
 	fmt.Printf("%+v\n", len(partsDict))
 	fmt.Printf("%+v\n", partsDict["15"])
+	*/
 
 	for _, value := range partsDict {
 		value.IsEmpty = false;
