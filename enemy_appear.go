@@ -192,7 +192,7 @@ zones []JsonZone) {
 	zones = CreateZones(questEnvironment, gameMap, gamePartsDict)
 
 	Dlogln("===zones====")
-	//Dlog("%+v\n", zones)
+	Dlog("zones count:%d\n", len(zones))
 
 	geneEnvironment := CreateGeneEnvironment(zones, questEnvironment, gameMap);
 
@@ -239,18 +239,18 @@ func CreateZones(questEnvironment QuestEnvironment, gameMap JsonGameMap, gamePar
 		}
 	}
 
-	Dlog("aho1:gamemap:%+v\n", gameMap.EnemyStartPoints)
-	Dlog("aho1:gamemap:%+v\n", gameMap.AllyStartPoint)
+	Dlog("aho1:gamemapENEM:%+v\n", gameMap.EnemyStartPoints)
+	Dlog("aho1:gamemapALLY:%+v\n", gameMap.AllyStartPoint)
 
 	//敵地点をゾーンに変換
 	var gameZones []GameZone
 	for _, value := range gameMap.EnemyStartPoints {
+		DDlog("zone2]%+v\n", value)
 		positions := CreateNearlyGamePositions(value, gameMap, xy)
 		gameZone := NewGameZone(positions)
 		gameZones = append(gameZones, *gameZone)
 		DDlog("zone0]%+v\n", gameZones)
 		DDlog("zone1]%+v\n", positions)
-		DDlog("zone2]%+v\n", value)
 	}
 	DDlogln("aho2")
 
@@ -297,37 +297,59 @@ func CreateNearlyGamePositions(position GameMapPosition, gameMap JsonGameMap, xy
 	createMaxNum := 5
 	createdNum := 0
 
-	xOffs := [...]int{-1, 0, 1, 0, -1, 1, -1, 1}
-	yOffs := [...]int{0, -1, 0, 1, -1, 1, 1, -1}
+	xOffs := [...]int{-1, 0, 1, 0, 0, -1, 1, -1, 1}
+	yOffs := [...]int{0, -1, 0, 1, 0, -1, 1, 1, -1}
 
-	for i := 0; i < 8; i++ {
+	for i := 0; i < 9; i++ {
 		x := position.X + xOffs[i]
 		y := position.Y + yOffs[i]
 		z := position.Z
+		DDlog("x:%d, y:%d, z%d\n", x,y,z)
+
 		if (x >= gameMap.MaxX || x < 0 || y >= gameMap.MaxY || y < 0 || z == 0) {
+			DDlogln("unko-1:", z)
 			continue
 		}
 		//他のゾーンで取られている
 		existXY := xy[y][x]
 		if (existXY) {
+			DDlogln("unko0:", z)
 			continue
 		}
-		DDlogln("unko0:", z)
-		cube := gameMap.JungleGym3[z - 1][y][x]
-		//足元がない
-		if (cube == nil) {
-			continue
+		//harfなら1マス下が肉抜きされている
+		cube1 := gameMap.JungleGym3[z][y][x]
+		if (cube1 != nil){
+			//歩行不能
+			if (!cube1.Walkable) {
+				DDlogln("unko22:", z)
+				continue
+			}
+			cube2 := gameMap.JungleGym3[z+1][y][x]
+			//ブロックで埋まっている
+			if (cube2 != nil) {
+				DDlogln("unko33:", z)
+				continue
+			}
+		}else{
+			cube := gameMap.JungleGym3[z - 1][y][x]
+			//足元がない
+			if (cube == nil) {
+				DDlogln("unko1:", z)
+				continue
+			}
+			//歩行不能
+			if (!cube.Walkable) {
+				DDlogln("unko2:", z)
+				continue
+			}
+			cube2 := gameMap.JungleGym3[z][y][x]
+			//ブロックで埋まっている
+			if (cube2 != nil) {
+				DDlogln("unko3:", z)
+				continue
+			}
 		}
-		//歩行不能
-		if (!cube.Walkable) {
-			continue
-		}
-		DDlogln("unko1:", z)
-		cube2 := gameMap.JungleGym3[z][y][x]
-		//ブロックで埋まっている
-		if (cube2 != nil) {
-			continue
-		}
+		DDlogln("add:")
 		xy[y][x] = true
 		gameMapPositions = append(gameMapPositions, GameMapPosition{X:x, Y:y, Z:z})
 		createdNum++
@@ -335,6 +357,7 @@ func CreateNearlyGamePositions(position GameMapPosition, gameMap JsonGameMap, xy
 			break
 		}
 	}
+Dlog("gameMapPositions:%+v",gameMapPositions)
 	return gameMapPositions
 }
 

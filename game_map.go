@@ -49,6 +49,7 @@ type JsonGameMap struct {
 func CreateGameMap(filePath string) JsonGameMap{
 	// Loading jsonfile
 	file, err := ioutil.ReadFile(filePath)
+	Dlogln(filePath)
 	// 指定したDataset構造体が中身になるSliceで宣言する
 	if err != nil {
 		Dlogln("Read Error: ", err)

@@ -472,7 +472,7 @@ func (geneEnvironment GeneEnvironment) choiceRandomZone() JsonZone {
 	zoneNum := len(geneEnvironment.Zones)
 
 	idx := lottery.GetRandomInt(0, zoneNum - 1)
-	Dlog("\n%+v,zonenum:%d",geneEnvironment,zoneNum)
+	//Dlog("\n%+v,zonenum:%d",geneEnvironment,zoneNum)
 	return geneEnvironment.Zones[idx]
 }
 
@@ -632,7 +632,7 @@ func CreateRandomGeneUnit(canCreateMaxNum int, geneEnvironment GeneEnvironment, 
 	geneUnit.calcFit(geneEnvironment)
 	DDlog("[GENE] enemy_num:%d fit(%d) \n", len(geneUnitEnemies), geneUnit.Fit)
 
-	geneUnit.dumpEnemyFit(geneEnvironment)
+//	geneUnit.dumpEnemyFit(geneEnvironment)
 
 	return geneUnit
 }

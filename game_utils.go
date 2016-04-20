@@ -10,8 +10,8 @@ DEBUG
 VERBOSE
 )
 
-var level dbgLevel = PRODUCTION
-//var level dbgLevel = VERBOSE
+//var level dbgLevel = PRODUCTION
+var level dbgLevel = VERBOSE
 
 func Dlog(format string, a ...interface{}) {
 if level < PRODUCTION {
