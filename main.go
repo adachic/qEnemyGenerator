@@ -8,6 +8,11 @@ import (
 	"os"
 )
 
+type JsonStub struct{
+	EnemyAppears []*EnemyAppear
+	Zones []JsonZone
+}
+
 
 var g_questId int
 
@@ -27,6 +32,14 @@ func main() {
 	flag.StringVar(&eqpFilePath, "eqp", "eqp.json", "APP_PARTS_FILE_PATH")
 	flag.StringVar(&enemyFilePath, "character", "character.json", "APP_PARTS_FILE_PATH")
 	flag.IntVar(&questId, "questId", 0, "APP_PARTS_FILE_PATH")
+
+	var jtocmode int
+	var csvFilePath string
+	var jsonFilePath string
+	flag.IntVar(&jtocmode, "mode", 0, "JSON_TO_CSV_MODE")
+	flag.StringVar(&csvFilePath, "csv", "quest.json", "CSV_PARTS_FILE_PATH")
+	flag.StringVar(&jsonFilePath, "json", "quest.json", "JSON_PARTS_FILE_PATH")
+
 	flag.Parse()
 	g_questId = questId
 
@@ -40,6 +53,11 @@ func main() {
 	fmt.Println("==eqp=")
 	eqps := CreateGameEqps(eqpFilePath)
 	fmt.Println("==characters=")
+
+	if(jtocmode > 0){
+		ConvCsvJson(jtocmode, jsonFilePath, csvFilePath);
+		return;
+	}
 //	CreateEnemySamplesJ(enemyFilePath)
 
 	currentQuest := quests[strconv.Itoa(questId)]
@@ -56,11 +74,6 @@ func main() {
 	CreateJsonAndCsv(enemyAppears, zones)
 
 	fmt.Printf("Hello, world4.\n")
-}
-
-type JsonStub struct{
-	EnemyAppears []*EnemyAppear
-	Zones []JsonZone
 }
 
 //Json/CSV出力

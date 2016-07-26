@@ -209,7 +209,7 @@ zones []JsonZone) {
 		enemyAppears = append(enemyAppears, enemyAppearsPerSlice...)
 	}
 
-	//AppearのIdとか足りてないやつをセットする
+	//AppearのIｊdとか足りてないやつをセットする
 	id := 1
 	for _, enemyAppear := range enemyAppears {
 		enemyAppear.Id = id
